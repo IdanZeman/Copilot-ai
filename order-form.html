@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עיצוב חולצות בהתאמה אישית בעזרת AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>AI חולצות</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">בית</a>
+                </li>
+                <li class="nav-item">
+                    <a href="my-orders.html" class="nav-link">ההזמנות שלי</a>
+                </li>
+                <li class="nav-item">
+                    <a href="order-form.html" class="nav-link active cta-link">הזמן עכשיו</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">AI חולצות</h1>
+            <p class="tagline">עיצוב חולצות מותאמות אישית בעזרת בינה מלאכותית</p>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="step-indicators">
+                <div class="step active" data-step="1">1</div>
+                <div class="step" data-step="2">2</div>
+                <div class="step" data-step="3">3</div>
+                <div class="step" data-step="4">4</div>
+                <div class="step" data-step="5">5</div>
+            </div>
+        </div>
+
+        <!-- Multi-step Form -->
+        <form id="tshirtForm" class="form-container">
+            <!-- Step 1: Event Type -->
+            <div class="step-content active" id="step1">
+                <h2>איזה סוג אירוע?</h2>
+                <div class="option-grid">
+                    <label class="option-card">
+                        <input type="radio" name="eventType" value="military">
+                        <div class="card-content">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>צבאי</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="eventType" value="family">
+                        <div class="card-content">
+                            <i class="fas fa-home"></i>
+                            <span>משפחתי</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="eventType" value="wedding">
+                        <div class="card-content">
+                            <i class="fas fa-heart"></i>
+                            <span>חתונה</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="eventType" value="corporate">
+                        <div class="card-content">
+                            <i class="fas fa-building"></i>
+                            <span>עסקי</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="eventType" value="birthday">
+                        <div class="card-content">
+                            <i class="fas fa-birthday-cake"></i>
+                            <span>יום הולדת</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="eventType" value="sports">
+                        <div class="card-content">
+                            <i class="fas fa-football-ball"></i>
+                            <span>ספורט</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="eventType" value="other">
+                        <div class="card-content">
+                            <i class="fas fa-plus"></i>
+                            <span>אחר</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Custom Event Type Input -->
+                <div class="custom-event-input" id="customEventInput" style="display: none;">
+                    <div class="input-group">
+                        <label for="customEventType">תאר/י את סוג האירוע:</label>
+                        <input type="text" id="customEventType" name="customEventType" placeholder="לדוגמה: חגיגת סיום, יום גיבוש, אירוע חברה..." maxlength="50">
+                        <div class="char-counter">
+                            <span id="customEventCount">0</span>/50
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Description -->
+            <div class="step-content" id="step2">
+                <h2>מה החולצה צריכה לבטא?</h2>
+                <div class="input-group">
+                    <textarea 
+                        id="description" 
+                        name="description" 
+                        placeholder="תאר/י במילים שלך מה החולצה צריכה לבטא... (לדוגמה: זוג שמתחתן בשקיעה, צוות לוחמים רצים עם אלונקה, רגע של ניצחון)"
+                        rows="4"
+                        maxlength="200"
+                        required
+                    ></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span>/200
+                    </div>
+                </div>
+                <div class="example-text">
+                    <small>דוגמאות: "חברי היחידה רצים יחד עם דגל", "זוג רוקד מתחת לכוכבים", "ילדים משחקים כדורגל בשקיעה", "צוות עובדים בונה ביחד"</small>
+                </div>
+            </div>
+
+            <!-- Step 3: AI Generated Designs -->
+            <div class="step-content" id="step3">
+                <h2>בחר/י עיצוב לחלק האחורי של החולצה</h2>
+                
+                <!-- Loading indicator -->
+                <div class="loading-designs" id="loadingDesigns">
+                    <div class="loading-spinner"></div>
+                    <p>יוצר עיצובים מותאמים אישית עבורך...</p>
+                </div>
+                
+                <!-- Generated designs grid -->
+                <div class="designs-grid" id="designsGrid" style="display: none;">
+                    <label class="design-option" for="design1">
+                        <div class="design-preview">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOWZhIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjI3M2Y0IiBmb250LXNpemU9IjE0Ij5FWEFNUExFIERFU0lHTiAxPC90ZXh0Pgo8L3N2Zz4=" alt="עיצוב 1">
+                        </div>
+                        <input type="radio" name="selectedDesign" value="design1" id="design1">
+                        <span class="design-label">עיצוב 1</span>
+                    </label>
+                    
+                    <label class="design-option" for="design2">
+                        <div class="design-preview">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOWZhIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTA5OGY0IiBmb250LXNpemU9IjE0Ij5FWEFNUExFIERFU0lHTiAyPC90ZXh0Pgo8L3N2Zz4=" alt="עיצוב 2">
+                        </div>
+                        <input type="radio" name="selectedDesign" value="design2" id="design2">
+                        <span class="design-label">עיצוב 2</span>
+                    </label>
+                    
+                    <label class="design-option" for="design3">
+                        <div class="design-preview">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOWZhIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZWY0NDQ0IiBmb250LXNpemU9IjE0Ij5FWEFNUExFIERFU0lHTiAzPC90ZXh0Pgo8L3N2Zz4=" alt="עיצוב 3">
+                        </div>
+                        <input type="radio" name="selectedDesign" value="design3" id="design3">
+                        <span class="design-label">עיצוב 3</span>
+                    </label>
+                </div>
+                <!-- Generate new designs button -->
+                <div class="regenerate-section">
+                    <button type="button" class="regenerate-btn" id="regenerateBtn">
+                        <i class="fas fa-redo"></i>
+                        צור עיצובים חדשים
+                    </button>
+                </div>
+                <!-- Design improvement section -->
+                <div class="design-improvement" id="designImprovement" style="display: none;">
+                    <h3>רוצה לשפר את העיצוב הנבחר?</h3>
+                    <div class="input-group">
+                        <textarea 
+                            id="improvementPrompt" 
+                            name="improvementPrompt" 
+                            placeholder="תאר/י איך תרצה לשפר את העיצוב... (לדוגמה: הוסף יותר פרטים, שנה את הצבעים, הוסף אלמנטים נוספים)"
+                            rows="3"
+                            maxlength="150"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="improvementCount">0</span>/150
+                        </div>
+                    </div>
+                    <button type="button" class="improve-btn" id="improveDesignBtn">שפר עיצוב</button>
+                </div>
+                
+                <!-- Text overlay section -->
+                <div class="text-overlay-section" id="textOverlaySection" style="display: none;">
+                    <h3>רוצה להוסיף טקסט לעיצוב?</h3>
+                    <div class="text-position-choice">
+                        <label class="text-option">
+                            <input type="radio" name="textPosition" value="none" checked>
+                            <span>ללא טקסט</span>
+                        </label>
+                        <label class="text-option">
+                            <input type="radio" name="textPosition" value="above">
+                            <span>טקסט מעל התמונה</span>
+                        </label>
+                        <label class="text-option">
+                            <input type="radio" name="textPosition" value="below">
+                            <span>טקסט מתחת לתמונה</span>
+                        </label>
+                    </div>
+                    
+                    <div class="overlay-text-input" id="overlayTextInput" style="display: none;">
+                        <div class="input-group">
+                            <input type="text" id="overlayText" name="overlayText" 
+                                   placeholder="הכנס/י את הטקסט שברצונך להוסיף..." maxlength="30">
+                            <div class="char-counter">
+                                <span id="overlayTextCount">0</span>/30
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Front Design -->
+            <div class="step-content" id="step4">
+                <h2>עיצוב החלק הקדמי</h2>
+                
+                <div class="front-design-section">
+                    <h3>איך תרצה ליצור את העיצוב הקדמי?</h3>
+                    <div class="front-design-options">
+                        <label class="design-method-option">
+                            <input type="radio" name="frontDesignMethod" value="upload" id="uploadMethod">
+                            <div class="method-card">
+                                <i class="fas fa-upload"></i>
+                                <h4>העלאת תמונה</h4>
+                                <p>העלה תמונה משלך מהמחשב</p>
+                            </div>
+                        </label>
+                        
+                        <label class="design-method-option">
+                            <input type="radio" name="frontDesignMethod" value="archive" id="archiveMethod">
+                            <div class="method-card">
+                                <i class="fas fa-images"></i>
+                                <h4>בחירה מארכיון</h4>
+                                <p>בחר מאוסף האייקונים שלנו</p>
+                            </div>
+                        </label>
+                        
+                        <label class="design-method-option">
+                            <input type="radio" name="frontDesignMethod" value="ai" id="aiMethod">
+                            <div class="method-card">
+                                <i class="fas fa-magic"></i>
+                                <h4>יצירה ב-AI</h4>
+                                <p>צור עיצוב ייחודי עם בינה מלאכותית</p>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- Upload Image Section -->
+                    <div class="front-method-content" id="uploadContent" style="display: none;">
+                        <h3>העלאת תמונה:</h3>
+                        <div class="upload-area">
+                            <input type="file" id="frontImageUpload" name="frontImageUpload" accept="image/*" style="display: none;">
+                            <label for="frontImageUpload" class="upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>לחץ להעלאת תמונה או גרור לכאן</span>
+                                <small>תמונות בפורמט JPG, PNG או SVG עד 5MB</small>
+                            </label>
+                            <div class="uploaded-image-preview" id="uploadedImagePreview" style="display: none;">
+                                <img id="uploadedImage" src="" alt="תמונה שהועלתה">
+                                <button type="button" class="remove-image-btn" id="removeImageBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Archive Selection Section -->
+                    <div class="front-method-content" id="archiveContent" style="display: none;">
+                        <h3>בחר/י אייקון מהארכיון:</h3>
+                        <div class="icon-grid">
+                            <label class="icon-option">
+                                <input type="radio" name="frontIcon" value="shield">
+                                <div class="icon-card">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>מגן</span>
+                                </div>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="frontIcon" value="heart">
+                                <div class="icon-card">
+                                    <i class="fas fa-heart"></i>
+                                    <span>לב</span>
+                                </div>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="frontIcon" value="star">
+                                <div class="icon-card">
+                                    <i class="fas fa-star"></i>
+                                    <span>כוכב</span>
+                                </div>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="frontIcon" value="crown">
+                                <div class="icon-card">
+                                    <i class="fas fa-crown"></i>
+                                    <span>כתר</span>
+                                </div>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="frontIcon" value="mountain">
+                                <div class="icon-card">
+                                    <i class="fas fa-mountain"></i>
+                                    <span>הר</span>
+                                </div>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="frontIcon" value="fire">
+                                <div class="icon-card">
+                                    <i class="fas fa-fire"></i>
+                                    <span>אש</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Generation Section -->
+                    <div class="front-method-content" id="aiContent" style="display: none;">
+                        <h3>צור עיצוב עם AI:</h3>
+                        <div class="input-group">
+                            <textarea 
+                                id="frontAIPrompt" 
+                                name="frontAIPrompt" 
+                                placeholder="תאר/י איך אתה רוצה שהעיצוב הקדמי ייראה... (לדוגמה: לוגו של נשר עף מעל הרים, סמל של חרבות מוצלבות, אייקון של כדורגל עם כנפיים)"
+                                rows="3"
+                                maxlength="150"
+                            ></textarea>
+                            <div class="char-counter">
+                                <span id="frontAICount">0</span>/150
+                            </div>
+                        </div>
+                        <button type="button" class="generate-front-btn" id="generateFrontBtn">
+                            <i class="fas fa-magic"></i>
+                            צור עיצוב
+                        </button>
+                        
+                        <!-- AI Generated Front Designs -->
+                        <div class="ai-front-results" id="aiFrontResults" style="display: none;">
+                            <h4>בחר/י עיצוב:</h4>
+                            <div class="ai-front-grid">
+                                <label class="ai-front-option">
+                                    <input type="radio" name="aiFrontDesign" value="ai1">
+                                    <div class="ai-front-preview">
+                                        <img src="" alt="עיצוב AI 1" id="aiFront1">
+                                    </div>
+                                </label>
+                                <label class="ai-front-option">
+                                    <input type="radio" name="aiFrontDesign" value="ai2">
+                                    <div class="ai-front-preview">
+                                        <img src="" alt="עיצוב AI 2" id="aiFront2">
+                                    </div>
+                                </label>
+                                <label class="ai-front-option">
+                                    <input type="radio" name="aiFrontDesign" value="ai3">
+                                    <div class="ai-front-preview">
+                                        <img src="" alt="עיצוב AI 3" id="aiFront3">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Overlay Section -->
+                    <div class="front-text-section" id="frontTextSection" style="display: none;">
+                        <h3>רוצה להוסיף טקסט לעיצוב הקדמי?</h3>
+                        <div class="front-text-position-choice">
+                            <label class="text-option">
+                                <input type="radio" name="frontTextPosition" value="none" checked>
+                                <span>ללא טקסט</span>
+                            </label>
+                            <label class="text-option">
+                                <input type="radio" name="frontTextPosition" value="above">
+                                <span>טקסט מעל התמונה</span>
+                            </label>
+                            <label class="text-option">
+                                <input type="radio" name="frontTextPosition" value="below">
+                                <span>טקסט מתחת לתמונה</span>
+                            </label>
+                        </div>
+                        
+                        <div class="front-overlay-text-input" id="frontOverlayTextInput" style="display: none;">
+                            <div class="input-group">
+                                <input type="text" id="frontOverlayText" name="frontOverlayText" 
+                                       placeholder="הכנס/י את הטקסט שברצונך להוסיף..." maxlength="30">
+                                <div class="char-counter">
+                                    <span id="frontOverlayTextCount">0</span>/30
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <h3>תצוגה מקדימה:</h3>
+                    <div class="front-preview" id="frontPreview">
+                        <div class="preview-caption" id="previewTopCaption"></div>
+                        <div class="preview-icon" id="previewIcon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div class="preview-caption" id="previewBottomCaption"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Customization -->
+            <div class="step-content" id="step5">
+                <h2>התאמה אישית</h2>
+                
+                <div class="selected-design-preview" id="selectedDesignPreview">
+                    <!-- Selected design preview -->
+                </div>
+
+                <div class="customization-options">
+                    <div class="color-section">
+                        <h3>צבע החולצה:</h3>
+                        <div class="color-grid">
+                            <label class="color-option">
+                                <input type="radio" name="shirtColor" value="black">
+                                <div class="color-swatch" style="background-color: #000000;"></div>
+                                <span>שחור</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="shirtColor" value="white" checked>
+                                <div class="color-swatch" style="background-color: #ffffff; border: 1px solid #ddd;"></div>
+                                <span>לבן</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="shirtColor" value="navy">
+                                <div class="color-swatch" style="background-color: #1e3a8a;"></div>
+                                <span>כחול כהה</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="shirtColor" value="gray">
+                                <div class="color-swatch" style="background-color: #6b7280;"></div>
+                                <span>אפור</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="shirtColor" value="red">
+                                <div class="color-swatch" style="background-color: #dc2626;"></div>
+                                <span>אדום</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="quantity-section">
+                        <h3>כמות לפי מידות:</h3>
+                        <div class="size-quantity-grid">
+                            <div class="size-row">
+                                <label>S</label>
+                                <input type="number" name="quantity_s" min="0" value="0" class="quantity-input">
+                            </div>
+                            <div class="size-row">
+                                <label>M</label>
+                                <input type="number" name="quantity_m" min="0" value="0" class="quantity-input">
+                            </div>
+                            <div class="size-row">
+                                <label>L</label>
+                                <input type="number" name="quantity_l" min="0" value="0" class="quantity-input">
+                            </div>
+                            <div class="size-row">
+                                <label>XL</label>
+                                <input type="number" name="quantity_xl" min="0" value="0" class="quantity-input">
+                            </div>
+                            <div class="size-row">
+                                <label>XXL</label>
+                                <input type="number" name="quantity_xxl" min="0" value="0" class="quantity-input">
+                            </div>
+                        </div>
+                        <div class="total-quantity">
+                            סה"כ: <span id="totalQuantity">0</span> חולצות
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Info -->
+                    <div class="contact-info">
+                        <h3>פרטי קשר</h3>
+                        <div class="input-group">
+                            <input type="text" name="customerName" placeholder="שם מלא" required>
+                        </div>
+                        <div class="input-group">
+                            <input type="email" name="customerEmail" placeholder="אימייל" required>
+                        </div>
+                        <div class="input-group">
+                            <input type="tel" name="customerPhone" placeholder="טלפון" required>
+                        </div>
+                        <div class="input-group">
+                            <textarea name="customerNotes" placeholder="הערות נוספות (אופציונלי)" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="navigation-buttons">
+                
+                <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;">
+                    <i class="fas fa-arrow-right"></i>
+                    חזור
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-primary">
+                    המשך
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button type="submit" id="submitBtn" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-credit-card"></i>
+                    מעבר לתשלום
+                </button>
+            </div>
+        </form>
+
+        <!-- Success Message -->
+        <div class="success-message hidden" id="successMessage">
+            <div class="success-content">
+                <i class="fas fa-check-circle"></i>
+                <h2>ההזמנה נשלחה בהצלחה!</h2>
+                <p>תודה שבחרת בנו. נחזור אליך בהקדם עם פרטי ההזמנה.</p>
+                <div class="success-buttons">
+                    <a href="my-orders.html" class="btn btn-primary">צפה בהזמנות שלי</a>
+                    <button class="btn btn-secondary" onclick="location.reload()">הזמנה חדשה</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

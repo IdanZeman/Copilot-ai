@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ההזמנות שלי - AI חולצות</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>AI חולצות</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">בית</a>
+                </li>
+                <li class="nav-item">
+                    <a href="my-orders.html" class="nav-link active">ההזמנות שלי</a>
+                </li>
+                <li class="nav-item">
+                    <a href="order-form.html" class="nav-link cta-link">הזמן עכשיו</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container orders-page">
+        <div class="page-header">
+            <h1>ההזמנות שלי</h1>
+            <p>כאן תוכל לראות את כל ההזמנות שלך ולעקוב אחר הסטטוס שלהן</p>
+        </div>
+
+        <!-- Orders Container -->
+        <div class="orders-container" id="ordersContainer">
+            <!-- Orders will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h2>אין לך הזמנות עדיין</h2>
+            <p>התחל לעצב את החולצה הראשונה שלך</p>
+            <a href="order-form.html" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                הזמנה חדשה
+            </a>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>פרטי הזמנה</h2>
+                <button class="close-modal" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="orders.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
