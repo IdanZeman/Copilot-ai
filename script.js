@@ -163,6 +163,7 @@ function setupEventListeners() {
     const frontOverlayText = document.getElementById('frontOverlayText');
     if (frontOverlayText) {
         frontOverlayText.addEventListener('input', updateCharCounters);
+        frontOverlayText.addEventListener('input', updateFrontPreview);
     }
     
     // Form validation for each step
@@ -497,10 +498,15 @@ function validateCurrentStep() {
             
         case 5:
             const shirtColor = document.querySelector('input[name="shirtColor"]:checked');
+            const designColor = document.querySelector('input[name="designColor"]:checked');
             const totalQty = updateTotalQuantity();
             
             if (!shirtColor) {
                 alert('אנא בחר/י צבע חולצה');
+                return false;
+            }
+            if (!designColor) {
+                alert('אנא בחר/י צבע גלופה');
                 return false;
             }
             if (totalQty === 0) {
@@ -606,7 +612,12 @@ function saveCurrentStepData() {
             }
             break;
         case 5:
-            formData.shirtColor = document.querySelector('input[name="shirtColor"]:checked').value;
+            const shirtColorElement = document.querySelector('input[name="shirtColor"]:checked');
+            const designColorElement = document.querySelector('input[name="designColor"]:checked');
+            
+            if (shirtColorElement) formData.shirtColor = shirtColorElement.value;
+            if (designColorElement) formData.designColor = designColorElement.value;
+            
             formData.quantities = {
                 s: parseInt(document.querySelector('input[name="quantity_s"]').value) || 0,
                 m: parseInt(document.querySelector('input[name="quantity_m"]').value) || 0,
@@ -708,6 +719,18 @@ function setupStepEventListeners() {
             input.removeEventListener('change', updateFrontPreview);
             input.addEventListener('change', updateFrontPreview);
         });
+        
+        // Front overlay text input listener
+        const frontOverlayText = document.getElementById('frontOverlayText');
+        if (frontOverlayText) {
+            frontOverlayText.removeEventListener('input', updateFrontPreview);
+            frontOverlayText.addEventListener('input', updateFrontPreview);
+        }
+    }
+    
+    // Setup color contrast listeners for step 5
+    if (currentStep === 5) {
+        setupColorContrastListeners();
     }
 }
 
@@ -1269,9 +1292,163 @@ function handleFrontTextPositionChange(e) {
         const frontOverlayText = document.getElementById('frontOverlayText');
         if (frontOverlayText) {
             frontOverlayText.focus();
+            // Add event listener for live preview updates
+            frontOverlayText.removeEventListener('input', updateFrontPreview);
+            frontOverlayText.addEventListener('input', updateFrontPreview);
         }
     }
     
     formData.frontTextPosition = position;
     updateFrontPreview();
 }
+
+// Color Contrast System
+const colorValues = {
+    black: '#000000',
+    white: '#ffffff',
+    navy: '#1e3a8a',
+    gray: '#6b7280',
+    red: '#dc2626',
+    gold: '#fbbf24',
+    silver: '#d1d5db'
+};
+
+// Convert hex to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+// Calculate relative luminance
+function getLuminance(rgb) {
+    const rsRGB = rgb.r / 255;
+    const gsRGB = rgb.g / 255;
+    const bsRGB = rgb.b / 255;
+
+    const r = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+    const g = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+    const b = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Calculate contrast ratio
+function getContrastRatio(color1, color2) {
+    const rgb1 = hexToRgb(color1);
+    const rgb2 = hexToRgb(color2);
+    
+    if (!rgb1 || !rgb2) return 1;
+    
+    const lum1 = getLuminance(rgb1);
+    const lum2 = getLuminance(rgb2);
+    
+    const brightest = Math.max(lum1, lum2);
+    const darkest = Math.min(lum1, lum2);
+    
+    return (brightest + 0.05) / (darkest + 0.05);
+}
+
+// Check if contrast is acceptable (WCAG AA standard: 4.5:1 for normal text)
+function isContrastAcceptable(shirtColor, designColor) {
+    const shirtHex = colorValues[shirtColor];
+    const designHex = colorValues[designColor];
+    
+    const ratio = getContrastRatio(shirtHex, designHex);
+    return ratio >= 4.5; // WCAG AA standard
+}
+
+// Get suggested colors for better contrast
+function getSuggestedColors(shirtColor) {
+    const suggestions = [];
+    
+    Object.keys(colorValues).forEach(color => {
+        if (color !== shirtColor && isContrastAcceptable(shirtColor, color)) {
+            suggestions.push(color);
+        }
+    });
+    
+    return suggestions;
+}
+
+// Update contrast warning
+function updateContrastWarning() {
+    const shirtColor = document.querySelector('input[name="shirtColor"]:checked')?.value;
+    const designColor = document.querySelector('input[name="designColor"]:checked')?.value;
+    const warningDiv = document.getElementById('contrastWarning');
+    const suggestedDiv = document.getElementById('suggestedColors');
+    
+    if (!shirtColor || !designColor) return;
+    
+    if (!isContrastAcceptable(shirtColor, designColor)) {
+        // Show warning
+        warningDiv.style.display = 'block';
+        
+        // Get and display suggestions
+        const suggestions = getSuggestedColors(shirtColor);
+        if (suggestions.length > 0) {
+            suggestedDiv.innerHTML = `
+                <h4>צבעים מומלצים לניגודיות טובה:</h4>
+                <div class="suggested-color-grid">
+                    ${suggestions.map(color => `
+                        <div class="suggested-color" onclick="selectSuggestedColor('${color}')">
+                            <div class="color-swatch" style="background-color: ${colorValues[color]}; ${color === 'white' ? 'border: 1px solid #ddd;' : ''}"></div>
+                            <span>${getColorName(color)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    } else {
+        // Hide warning
+        warningDiv.style.display = 'none';
+    }
+}
+
+// Get color name in Hebrew
+function getColorName(color) {
+    const names = {
+        black: 'שחור',
+        white: 'לבן',
+        navy: 'כחול כהה',
+        gray: 'אפור',
+        red: 'אדום',
+        gold: 'זהב',
+        silver: 'כסף'
+    };
+    return names[color] || color;
+}
+
+// Select suggested color
+function selectSuggestedColor(color) {
+    const designColorInput = document.querySelector(`input[name="designColor"][value="${color}"]`);
+    if (designColorInput) {
+        designColorInput.checked = true;
+        updateContrastWarning();
+        // Update formData
+        formData.designColor = color;
+    }
+}
+
+// Setup color contrast listeners
+function setupColorContrastListeners() {
+    document.querySelectorAll('input[name="shirtColor"]').forEach(input => {
+        input.addEventListener('change', updateContrastWarning);
+    });
+    
+    document.querySelectorAll('input[name="designColor"]').forEach(input => {
+        input.addEventListener('change', updateContrastWarning);
+    });
+}
+
+// Initialize contrast checking when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add to existing DOMContentLoaded if exists, or create new one
+    setTimeout(() => {
+        setupColorContrastListeners();
+        updateContrastWarning();
+    }, 100);
+});

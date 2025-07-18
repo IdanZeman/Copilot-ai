@@ -467,6 +467,58 @@
                         </div>
                     </div>
 
+                    <div class="design-color-section">
+                        <h3>צבע הגלופה:</h3>
+                        <div class="color-grid">
+                            <label class="color-option">
+                                <input type="radio" name="designColor" value="black" checked>
+                                <div class="color-swatch" style="background-color: #000000;"></div>
+                                <span>שחור</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="designColor" value="white">
+                                <div class="color-swatch" style="background-color: #ffffff; border: 1px solid #ddd;"></div>
+                                <span>לבן</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="designColor" value="navy">
+                                <div class="color-swatch" style="background-color: #1e3a8a;"></div>
+                                <span>כחול כהה</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="designColor" value="gray">
+                                <div class="color-swatch" style="background-color: #6b7280;"></div>
+                                <span>אפור</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="designColor" value="red">
+                                <div class="color-swatch" style="background-color: #dc2626;"></div>
+                                <span>אדום</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="designColor" value="gold">
+                                <div class="color-swatch" style="background-color: #fbbf24;"></div>
+                                <span>זהב</span>
+                            </label>
+                            <label class="color-option">
+                                <input type="radio" name="designColor" value="silver">
+                                <div class="color-swatch" style="background-color: #d1d5db;"></div>
+                                <span>כסף</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Contrast Warning -->
+                        <div class="contrast-warning" id="contrastWarning" style="display: none;">
+                            <div class="warning-content">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>צירוף הצבעים הנבחר עלול לא להיראות טוב. מומלץ לבחור צבעים בעלי ניגודיות גבוהה יותר.</span>
+                            </div>
+                            <div class="suggested-colors" id="suggestedColors">
+                                <!-- Suggested alternative colors will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="quantity-section">
                         <h3>כמות לפי מידות:</h3>
                         <div class="size-quantity-grid">
