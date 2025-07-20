@@ -29,6 +29,26 @@ app.get('/order', (req, res) => {
     res.sendFile(path.join(rootDir, 'public', 'html', 'order-form.html'));
 });
 
+// Also handle /order-form for backward compatibility
+app.get('/order-form', (req, res) => {
+    res.redirect('/order');
+});
+
+app.get('/orders', (req, res) => {
+    res.sendFile(path.join(rootDir, 'public', 'html', 'my-orders.html'));
+});
+
+// Also handle /my-orders for backward compatibility
+app.get('/my-orders', (req, res) => {
+    res.redirect('/orders');
+});
+
+// Handle legacy HTML paths
+app.get('/:page.html', (req, res) => {
+    const page = req.params.page;
+    res.redirect(page === 'index' ? '/' : '/' + page);
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

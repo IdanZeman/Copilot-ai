@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI חולצות - עיצוב חולצות בהתאמה אישית</title>
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -17,13 +17,13 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="./index.html" class="nav-link active">בית</a>
+                    <a href="/" class="nav-link active">בית</a>
                 </li>
                 <li class="nav-item">
-                    <a href="./my-orders.html" class="nav-link">ההזמנות שלי</a>
+                    <a href="/orders" class="nav-link">ההזמנות שלי</a>
                 </li>
                 <li class="nav-item">
-                    <a href="./order-form.html" class="nav-link cta-link">התחל לעצב</a>
+                    <a href="/order" class="nav-link cta-link">התחל לעצב</a>
                 </li>
             </ul>
             <div class="hamburger">
@@ -41,12 +41,12 @@
                 <h1 class="hero-title">עיצוב חולצות מותאמות אישית<br>בעזרת <span class="highlight">בינה מלאכותית</span></h1>
                 <p class="hero-subtitle">צור עיצובים ייחודיים לכל אירוע - צבאי, משפחתי, עסקי ועוד<br>תהליך פשוט ומהיר עם תוצאות מקצועיות</p>
                 <div class="hero-buttons">
-                    <a href="./order-form.html" class="btn btn-primary btn-large">
+                    <a href="/order" class="btn btn-primary btn-large">
                         <i class="fas fa-magic"></i>
                         התחל לעצב עכשיו
                     </a>
                     <a href="#how-it-works" class="btn btn-secondary btn-large">
-                        <i class="fas fa-play"></i>
+                        <i class="fas fa-tools"></i>
                         איך זה עובד?
                     </a>
                 </div>
@@ -115,54 +115,68 @@
 
     <!-- How It Works Section -->
     <section class="how-it-works" id="how-it-works">
-        <div class="container">
-            <h2 class="section-title">איך זה עובד?</h2>
-            <div class="steps-container">
-                <div class="step-item">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>בחר סוג אירוע</h3>
-                        <p>צבאי, משפחתי, חתונה, עסקי או כל אירוע אחר</p>
+        <div class="process-container">
+            <h2 class="section-title">פשוט וקל ליצור חולצה מעוצבת</h2>
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="process-step-inner">
+                        <div class="step-circle">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <h3>בחר אירוע</h3>
+                        <p>ספר לנו על האירוע שלך</p>
+                    </div>
+                    <div class="step-arrow">
+                        <i class="fas fa-chevron-left"></i>
                     </div>
                 </div>
-                <div class="step-arrow">
-                    <i class="fas fa-arrow-left"></i>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
+                
+                <div class="process-step">
+                    <div class="process-step-inner">
+                        <div class="step-circle">
+                            <i class="fas fa-pen"></i>
+                        </div>
                         <h3>תאר את הרעיון</h3>
-                        <p>ספר לנו מה החולצה צריכה לבטא ולאיזה קהל</p>
+                        <p>שתף אותנו במה שאתה מחפש</p>
+                    </div>
+                    <div class="step-arrow">
+                        <i class="fas fa-chevron-left"></i>
                     </div>
                 </div>
-                <div class="step-arrow">
-                    <i class="fas fa-arrow-left"></i>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>בחר עיצוב</h3>
-                        <p>הבינה המלאכותית תציע לך מספר עיצובים ייחודיים</p>
+                
+                <div class="process-step">
+                    <div class="process-step-inner">
+                        <div class="step-circle">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3>קבל עיצוב</h3>
+                        <p>נכין לך עיצוב מותאם אישית</p>
+                    </div>
+                    <div class="step-arrow">
+                        <i class="fas fa-chevron-left"></i>
                     </div>
                 </div>
-                <div class="step-arrow">
-                    <i class="fas fa-arrow-left"></i>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>התאם אישית</h3>
-                        <p>בחר צבעים, מידות וכמויות</p>
+                
+                <div class="process-step">
+                    <div class="process-step-inner">
+                        <div class="step-circle">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3>התאם והשלם</h3>
+                        <p>בחר צבעים וכמויות</p>
+                    </div>
+                    <div class="step-arrow">
+                        <i class="fas fa-chevron-left"></i>
                     </div>
                 </div>
-                <div class="step-arrow">
-                    <i class="fas fa-arrow-left"></i>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">5</div>
-                    <div class="step-content">
-                        <h3>קבל את החולצות</h3>
-                        <p>נדפיס ונשלח ישירות אליך</p>
+                
+                <div class="process-step">
+                    <div class="process-step-inner">
+                        <div class="step-circle">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <h3>קבל הביתה</h3>
+                        <p>משלוח מהיר עד אליך</p>
                     </div>
                 </div>
             </div>
@@ -226,7 +240,7 @@
             <div class="cta-content">
                 <h2>מוכן להתחיל?</h2>
                 <p>צור את העיצוב הייחודי שלך עכשיו ותקבל תוצאה מקצועית תוך דקות</p>
-                <a href="./order-form.html" class="btn btn-primary btn-large">
+                <a href="/order" class="btn btn-primary btn-large">
                     <i class="fas fa-rocket"></i>
                     התחל לעצב עכשיו
                 </a>
@@ -245,9 +259,9 @@
                 <div class="footer-section">
                     <h4>קישורים מהירים</h4>
                     <ul>
-                        <li><a href="index.html">בית</a></li>
-                        <li><a href="./order-form.html">הזמן עכשיו</a></li>
-                        <li><a href="./my-orders.html">ההזמנות שלי</a></li>
+                        <li><a href="/">בית</a></li>
+                        <li><a href="/order">הזמן עכשיו</a></li>
+                        <li><a href="/orders">ההזמנות שלי</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -264,6 +278,6 @@
         </div>
     </footer>
 
-    <script src="../js/script.js"></script>
+    <script src="/js/script.js"></script>
 </body>
 </html>
