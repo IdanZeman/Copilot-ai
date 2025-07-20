@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<htm                <li class="nav-item">
+                    <a href="./index.html" class="nav-link">בית</a>
+                </li>
+                <li class="nav-item">
+                    <a href="./my-orders.html" class="nav-link">ההזמנות שלי</a>
+                </li>
+                <li class="nav-item">
+                    <a href="./order-form.html" class="nav-link active cta-link">התחל לעצב</a>
+                </li>e" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>עיצוב חולצות בהתאמה אישית בעזרת AI</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/styles-designs.css">
+    <link rel="stylesheet" href="../css/styles-design.css">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -17,13 +28,13 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="index.html" class="nav-link">בית</a>
+                    <a href="./index.html" class="nav-link">בית</a>
                 </li>
                 <li class="nav-item">
-                    <a href="my-orders.html" class="nav-link">ההזמנות שלי</a>
+                    <a href="./my-orders.html" class="nav-link">ההזמנות שלי</a>
                 </li>
                 <li class="nav-item">
-                    <a href="order-form.html" class="nav-link active cta-link">הזמן עכשיו</a>
+                    <a href="./order-form.html" class="nav-link active cta-link">התחל לעצב</a>
                 </li>
             </ul>
             <div class="hamburger">
@@ -150,20 +161,18 @@
                 <h2>בחר/י עיצוב לחלק האחורי של החולצה</h2>
                 
                 <!-- Loading indicator -->
-                <div class="loading-designs" id="loadingDesigns">
+                <div class="loading-designs" id="loadingDesigns" style="display: none;">
                     <div class="loading-spinner"></div>
                     <p>יוצר עיצובים מותאמים אישית עבורך...</p>
                 </div>
                 
-                <!-- Generated designs grid -->
-                <div class="designs-grid" id="designsGrid" style="display: none;">
-                    <label class="design-option" for="design1">
+                <!-- Generated design -->
+                <div class="design-container" id="designContainer" style="display: none;">
+                    <div class="design-wrapper">
                         <div class="design-preview">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOWZhIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZWY0NDQ0IiBmb250LXNpemU9IjE0Ij5FWEFNUExFIERFU0lHTiAzPC90ZXh0Pgo8L3N2Zz4=" alt="עיצוב">
+                            <img src="../images/default-tshirt.png" alt="עיצוב מותאם אישית" id="designImage">
                         </div>
-                        <input type="radio" name="selectedDesign" value="design" id="design">
-                        <span class="design-label">עיצוב</span>
-                    </label>
+                    </div>
                 </div>
                 <!-- Generate new designs button -->
                 <div class="regenerate-section">
@@ -556,15 +565,15 @@
                 
                 <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;">
                     <i class="fas fa-arrow-right"></i>
-                    חזור
+                    חזור לשלב הקודם
                 </button>
                 <button type="button" id="nextBtn" class="btn btn-primary">
-                    המשך
+                    המשך לשלב הבא
                     <i class="fas fa-arrow-left"></i>
                 </button>
                 <button type="submit" id="submitBtn" class="btn btn-success" style="display: none;">
                     <i class="fas fa-credit-card"></i>
-                    מעבר לתשלום
+                    סיים והמשך לתשלום
                 </button>
             </div>
         </form>
@@ -576,13 +585,13 @@
                 <h2>ההזמנה נשלחה בהצלחה!</h2>
                 <p>תודה שבחרת בנו. נחזור אליך בהקדם עם פרטי ההזמנה.</p>
                 <div class="success-buttons">
-                    <a href="my-orders.html" class="btn btn-primary">צפה בהזמנות שלי</a>
+                    <a href="./my-orders.html" class="btn btn-primary">צפה בהזמנות שלי</a>
                     <button class="btn btn-secondary" onclick="location.reload()">הזמנה חדשה</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="/js/main.js"></script>
+    <script src="../js/main.js"></script>
 </body>
 </html>

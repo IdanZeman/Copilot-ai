@@ -1,0 +1,44 @@
+import 'dotenv/config';
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import aiService from './ai-service.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.join(__dirname, '../..');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+
+// Serve static files from public directory
+app.use(express.static(path.join(rootDir, 'public')));
+
+// API Routes
+app.use('/api', aiService);
+
+// Serve HTML files
+app.get('/', (req, res) => {
+    res.sendFile(path.join(rootDir, 'public', 'html', 'index.html'));
+});
+
+app.get('/order', (req, res) => {
+    res.sendFile(path.join(rootDir, 'public', 'html', 'order-form.html'));
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        success: false, 
+        error: 'Something went wrong!' 
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Root directory: ${rootDir}`);
+});

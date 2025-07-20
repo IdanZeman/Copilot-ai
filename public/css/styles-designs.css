@@ -1,0 +1,220 @@
+/* Button Styles */
+.generate-btn {
+    display: block;
+    margin: 1rem auto;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.generate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.generate-btn i {
+    margin-left: 0.5rem;
+}
+
+.design-wrapper {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.design-container {
+    max-width: 350px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.design-preview {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.design-preview img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+.loading-designs {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(0,0,0,0.1);
+    border-radius: 50%;
+    border-top-color: #667eea;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.designs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.design-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.design-preview {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    transition: border-color 0.2s;
+}
+
+.design-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.design-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.design-option input[type="radio"]:checked + .design-preview {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px #667eea;
+}
+
+.design-label {
+    display: block;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+/* --- Upload Area Styles --- */
+.upload-area {
+    background: #f8f9fa;
+    border: 2px dashed #a0aec0;
+    border-radius: 10px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+    cursor: pointer;
+}
+.upload-area:hover, .upload-area:focus-within {
+    border-color: #667eea;
+    background: #eef2ff;
+}
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #4a5568;
+    font-size: 1rem;
+}
+.upload-label i {
+    font-size: 2.2rem;
+    color: #667eea;
+}
+.upload-label small {
+    color: #888;
+    font-size: 0.95em;
+}
+.uploaded-image-preview {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.uploaded-image-preview img {
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+.remove-image-btn {
+    background: #e53e3e;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background 0.2s;
+}
+.remove-image-btn:hover {
+    background: #c53030;
+}
+
+/* --- AI Design Section Styles --- */
+.front-method-content {
+    margin-bottom: 2rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.2rem 1rem 1.5rem 1rem;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.06);
+}
+.input-group {
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.char-counter {
+    color: #888;
+    font-size: 0.95em;
+    margin-top: 0.2rem;
+    text-align: left;
+    direction: ltr;
+}
+.generate-front-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.08);
+}
+.generate-front-btn:hover {
+    background: #667eea;
+    box-shadow: 0 4px 16px rgba(102,126,234,0.13);
+}

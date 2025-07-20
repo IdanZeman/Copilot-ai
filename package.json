@@ -1,0 +1,30 @@
+{
+  "name": "copilot-ai",
+  "version": "1.0.0",
+  "description": "> מעצב חולצות בהתאמה אישית בעזרת בינה מלאכותית עם תמיכה מלאה בעברית",
+  "main": "ai-prompt-generator.js",
+  "scripts": {
+    "start": "node src/server/index.js",
+    "dev": "nodemon src/server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IdanZeman/Copilot-ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/IdanZeman/Copilot-ai/issues"
+  },
+  "homepage": "https://github.com/IdanZeman/Copilot-ai#readme",
+  "dependencies": {
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
