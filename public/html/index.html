@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI חולצות - עיצוב חולצות בהתאמה אישית</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title>מעצב החולצות שלי - עיצוב חולצות בהתאמה אישית</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/styles-user-menu.css">
+    <link rel="stylesheet" href="../css/styles-auth.css">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -13,17 +16,34 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <h2>AI חולצות</h2>
+                <h2>מעצב החולצות שלי</h2>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="/" class="nav-link active">בית</a>
+                    <a href="./index.html" class="nav-link active">בית</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/orders" class="nav-link">ההזמנות שלי</a>
+                    <a href="./my-orders.html" class="nav-link">ההזמנות שלי</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/order" class="nav-link cta-link">התחל לעצב</a>
+                    <a href="./order-form.html" class="nav-link cta-link">התחל לעצב</a>
+                </li>
+                <li class="nav-item user-menu-item">
+                    <div class="user-menu-trigger">
+                        <i class="fas fa-user-circle"></i>
+                        <div class="user-menu">
+                            <div class="user-menu-header">
+                                <i class="fas fa-user"></i>
+                                <span>אזור אישי</span>
+                            </div>
+                            <div class="user-menu-content">
+                                <a href="#" class="user-menu-link login-link">
+                                    <i class="fab fa-google"></i>
+                                    התחבר עם Google
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </li>
             </ul>
             <div class="hamburger">
@@ -41,7 +61,7 @@
                 <h1 class="hero-title">עיצוב חולצות מותאמות אישית<br>בעזרת <span class="highlight">בינה מלאכותית</span></h1>
                 <p class="hero-subtitle">צור עיצובים ייחודיים לכל אירוע - צבאי, משפחתי, עסקי ועוד<br>תהליך פשוט ומהיר עם תוצאות מקצועיות</p>
                 <div class="hero-buttons">
-                    <a href="/order" class="btn btn-primary btn-large">
+                    <a href="./order-form.html" class="btn btn-primary btn-large">
                         <i class="fas fa-magic"></i>
                         התחל לעצב עכשיו
                     </a>
@@ -240,7 +260,7 @@
             <div class="cta-content">
                 <h2>מוכן להתחיל?</h2>
                 <p>צור את העיצוב הייחודי שלך עכשיו ותקבל תוצאה מקצועית תוך דקות</p>
-                <a href="/order" class="btn btn-primary btn-large">
+                <a href="./order-form.html" class="btn btn-primary btn-large">
                     <i class="fas fa-rocket"></i>
                     התחל לעצב עכשיו
                 </a>
@@ -253,15 +273,15 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>AI חולצות</h3>
+                    <h3>מעצב החולצות שלי</h3>
                     <p>עיצוב חולצות מותאמות אישית בעזרת בינה מלאכותית</p>
                 </div>
                 <div class="footer-section">
                     <h4>קישורים מהירים</h4>
                     <ul>
-                        <li><a href="/">בית</a></li>
-                        <li><a href="/order">הזמן עכשיו</a></li>
-                        <li><a href="/orders">ההזמנות שלי</a></li>
+                        <li><a href="./index.html">בית</a></li>
+                        <li><a href="./order-form.html">הזמן עכשיו</a></li>
+                        <li><a href="./my-orders.html">ההזמנות שלי</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -273,11 +293,15 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 AI חולצות. כל הזכויות שמורות.</p>
+                <p>&copy; 2025 מעצב החולצות שלי. כל הזכויות שמורות.</p>
             </div>
         </div>
     </footer>
 
-    <script src="/js/script.js"></script>
+    <!-- Auth Modal Templates -->
+    <div id="auth-modals-container"></div>
+    
+    <script type="module" src="../js/script.js"></script>
+    <script type="module" src="../../src/client/auth-ui.js"></script>
 </body>
 </html>

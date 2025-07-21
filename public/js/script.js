@@ -1,8 +1,32 @@
+// Import auth-related functionality
+import { setupAuthLinks } from '../../src/client/auth-ui.js';
+
 // Global variables
 let currentStep = 1;
 const totalSteps = 5; // Total number of steps in the form
 let selectedDesign = null;
 let formData = {};
+
+// Load auth modal templates
+async function loadAuthModals() {
+    try {
+        const response = await fetch('../html/auth-modals.html');
+        const html = await response.text();
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        const templates = tempDiv.querySelectorAll('template');
+        const container = document.getElementById('auth-modals-container');
+        
+        templates.forEach(template => {
+            container.appendChild(template);
+        });
+        
+        setupAuthLinks();
+    } catch (error) {
+        console.error('Error loading auth modals:', error);
+    }
+}
 
 // Navigation functionality
 function setupNavigation() {
@@ -320,4 +344,7 @@ function initForm() {
 }
 
 // Call initialization when DOM is loaded
-document.addEventListener('DOMContentLoaded', initForm);
+document.addEventListener('DOMContentLoaded', () => {
+    initForm();
+    loadAuthModals();
+});
