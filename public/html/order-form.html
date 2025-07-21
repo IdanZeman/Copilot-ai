@@ -198,32 +198,43 @@
                     </div>
                     <button type="button" class="improve-btn" id="improveDesignBtn">שפר עיצוב</button>
                 </div>
-                
-                <!-- Text overlay section -->
-                <div class="text-overlay-section" id="textOverlaySection" style="display: none;">
-                    <h3>רוצה להוסיף טקסט לעיצוב?</h3>
-                    <div class="text-position-choice">
+
+                <!-- Back Text Section -->
+                <div class="back-text-section" id="backTextSection" style="display: none;">
+                    <h3>רוצה להוסיף טקסט לעיצוב האחורי?</h3>
+                    <div class="back-text-position-choice">
                         <label class="text-option">
-                            <input type="radio" name="textPosition" value="none" checked>
+                            <input type="radio" name="backTextPosition" value="none" checked>
                             <span>ללא טקסט</span>
                         </label>
                         <label class="text-option">
-                            <input type="radio" name="textPosition" value="above">
-                            <span>טקסט מעל התמונה</span>
+                            <input type="radio" name="backTextPosition" value="above">
+                            <span>טקסט מעל העיצוב</span>
                         </label>
                         <label class="text-option">
-                            <input type="radio" name="textPosition" value="below">
-                            <span>טקסט מתחת לתמונה</span>
+                            <input type="radio" name="backTextPosition" value="below">
+                            <span>טקסט מתחת לעיצוב</span>
                         </label>
                     </div>
                     
-                    <div class="overlay-text-input" id="overlayTextInput" style="display: none;">
+                    <div class="back-text-input" id="backTextInput" style="display: none;">
                         <div class="input-group">
-                            <input type="text" id="overlayText" name="overlayText" 
+                            <input type="text" id="backText" name="backText" 
                                    placeholder="הכנס/י את הטקסט שברצונך להוסיף..." maxlength="30">
                             <div class="char-counter">
-                                <span id="overlayTextCount">0</span>/30
+                                <span id="backTextCount">0</span>/30
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h3>תצוגה מקדימה:</h3>
+                        <div class="back-preview" id="backPreview">
+                            <div class="preview-caption" id="backPreviewTopCaption"></div>
+                            <div class="preview-design">
+                                <img src="" alt="עיצוב אחורי" id="backPreviewImage">
+                            </div>
+                            <div class="preview-caption" id="backPreviewBottomCaption"></div>
                         </div>
                     </div>
                 </div>

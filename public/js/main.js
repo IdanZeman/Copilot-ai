@@ -11,12 +11,72 @@
     const stepIndicators = document.querySelectorAll('.step');
     let currentStep = 0;
 
+    // Initialize back text functionality
+    function initBackText() {
+        const backTextSection = document.getElementById('backTextSection');
+        const backTextInput = document.getElementById('backText');
+        const backTextCount = document.getElementById('backTextCount');
+        const backTextPositions = document.getElementsByName('backTextPosition');
+        const backPreviewTopCaption = document.getElementById('backPreviewTopCaption');
+        const backPreviewBottomCaption = document.getElementById('backPreviewBottomCaption');
+
+        // Show text section when a design is selected
+        document.getElementById('designContainer').addEventListener('change', function() {
+            backTextSection.style.display = 'block';
+        });
+
+        // Text input handler
+        backTextInput.addEventListener('input', function() {
+            const text = this.value;
+            const maxLength = this.getAttribute('maxlength');
+            backTextCount.textContent = `${text.length}/${maxLength}`;
+
+            // Update the preview based on selected position
+            const selectedPosition = document.querySelector('input[name="backTextPosition"]:checked');
+            if (selectedPosition) {
+                if (selectedPosition.value === 'above') {
+                    backPreviewTopCaption.textContent = text;
+                    backPreviewBottomCaption.textContent = '';
+                } else if (selectedPosition.value === 'below') {
+                    backPreviewTopCaption.textContent = '';
+                    backPreviewBottomCaption.textContent = text;
+                } else {
+                    backPreviewTopCaption.textContent = '';
+                    backPreviewBottomCaption.textContent = '';
+                }
+            }
+        });
+
+        // Position selection handler
+        backTextPositions.forEach(position => {
+            position.addEventListener('change', function() {
+                const text = backTextInput.value;
+                backPreviewTopCaption.textContent = '';
+                backPreviewBottomCaption.textContent = '';
+                
+                if (this.value === 'above') {
+                    backPreviewTopCaption.textContent = text;
+                    document.getElementById('backTextInput').style.display = 'block';
+                } else if (this.value === 'below') {
+                    backPreviewBottomCaption.textContent = text;
+                    document.getElementById('backTextInput').style.display = 'block';
+                } else {
+                    document.getElementById('backTextInput').style.display = 'none';
+                }
+            });
+        });
+    }
+
     // Front design method elements
     const frontDesignMethods = document.querySelectorAll('input[name="frontDesignMethod"]');
     const uploadContent = document.getElementById('uploadContent');
     const archiveContent = document.getElementById('archiveContent');
     const aiContent = document.getElementById('aiContent');
     const frontTextSection = document.getElementById('frontTextSection');
+    
+    // Back design elements
+    const designContainer = document.getElementById('designContainer');
+    const backTextSection = document.getElementById('backTextSection');
 
     // Initialize step visibility
     function updateStepVisibility() {
@@ -42,6 +102,28 @@
 
     // Initialize first step
     updateStepVisibility();
+
+    // Back design selection handler
+    designContainer.addEventListener('change', function(e) {
+        if (e.target.name === 'selectedDesign') {
+            backTextSection.style.display = 'block';
+        }
+    });
+
+    // Show back text section when design is loaded
+    const designImage = document.getElementById('designImage');
+    const backPreviewImage = document.getElementById('backPreviewImage');
+    
+    designImage.addEventListener('load', function() {
+        if (designContainer.querySelector('input[name="selectedDesign"]:checked')) {
+            backTextSection.style.display = 'block';
+            // Update preview image
+            backPreviewImage.src = designImage.src;
+        }
+    });
+    
+    // Initialize back text functionality
+    initBackText();
 
     // Front design method handlers
     frontDesignMethods.forEach(method => {
