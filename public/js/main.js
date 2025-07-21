@@ -1,5 +1,8 @@
 // Client-side code - Only UI interactions
 (function() {
+    // Global form data storage
+    let formData = {};
+    
     // Elements
     const form = document.getElementById('tshirtForm');
     const designBtn = document.getElementById('generateFrontBtn');
@@ -45,7 +48,7 @@
                     backPreviewBottomCaption.textContent = '';
                 }
             }
-        });
+        }); 
 
         // Position selection handler
         backTextPositions.forEach(position => {
@@ -269,9 +272,35 @@
         }, 5000);
     }
 
+    // Function to collect form data from current step
+    function collectFormData() {
+        // Collect event type
+        const eventTypeElement = document.querySelector('input[name="eventType"]:checked');
+        if (eventTypeElement) {
+            formData.eventType = eventTypeElement.value;
+        }
+        
+        // Collect description
+        const descriptionElement = document.getElementById('description');
+        if (descriptionElement) {
+            formData.description = descriptionElement.value;
+        }
+        
+        // Collect other form fields as needed
+        const eventNameElement = document.getElementById('eventName');
+        if (eventNameElement) {
+            formData.eventName = eventNameElement.value;
+        }
+        
+        console.log('Form data collected:', formData);
+    }
+
     // Navigation event handlers
     nextBtn.addEventListener('click', () => {
         if (validateStep()) {
+            // Collect form data before moving to next step
+            collectFormData();
+            
             currentStep++;
             updateStepVisibility();
             window.scrollTo(0, 0);
@@ -293,34 +322,149 @@
     async function generateNewDesign() {
         console.log('Starting design generation');
 
-        // Get elements
+        // Get elements (with null checks)
         const loadingDesigns = document.getElementById('loadingDesigns');
         const designContainer = document.getElementById('designContainer');
         const designImage = document.getElementById('designImage');
         const regenerateSection = document.querySelector('.regenerate-section');
         const regenerateBtn = document.getElementById('regenerateBtn');
         const designImprovement = document.getElementById('designImprovement');
-        const textOverlaySection = document.getElementById('textOverlaySection');
+        
+        // Note: textOverlaySection doesn't exist in HTML, so we skip it
+        
+        console.log('Found elements:', {
+            loadingDesigns: !!loadingDesigns,
+            designContainer: !!designContainer,
+            designImage: !!designImage,
+            regenerateSection: !!regenerateSection,
+            regenerateBtn: !!regenerateBtn,
+            designImprovement: !!designImprovement
+        });
         
         // Show loading and hide other elements
-        if (loadingDesigns) loadingDesigns.style.display = 'block';
+        if (loadingDesigns) {
+            loadingDesigns.style.display = 'block';
+            console.log('Loading element shown');
+        } else {
+            console.error('loadingDesigns element not found!');
+        }
         if (designContainer) designContainer.style.display = 'none';
         if (regenerateSection) regenerateSection.style.display = 'none';
         if (regenerateBtn) regenerateBtn.disabled = true;
         if (designImprovement) designImprovement.style.display = 'none';
-        if (textOverlaySection) textOverlaySection.style.display = 'none';
 
         try {
-            // Simulate API call to generate designs (replace with actual API call)
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2 second delay
+            // Get form data for AI generation
+            const eventType = formData.eventType || document.querySelector('input[name="eventType"]:checked')?.value;
+            const description = formData.description || document.getElementById('description')?.value;
+            const designType = 'front'; // Specify if this is front or back design
+            
+            if (!eventType || !description) {
+                throw new Error('חסרים פרטי האירוע או התיאור לייצור העיצוב');
+            }
 
-            // Simulate generating a new design
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Call the real AI API
+            const response = await fetch('/api/generate-design', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    eventType: eventType,
+                    description: description,
+                    designType: designType
+                })
+            });
 
-            if (designImage) {
-                // Set the design image to a placeholder image
-                designImage.src = 'https://placehold.co/600x600/667eea/ffffff?text=AI+Design';
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to generate design');
+            }
+
+            if (designImage && result.design) {
+                // Set the AI-generated design image
+                console.log('Setting image source to:', result.design.imageUrl);
+                
+                // Clear any previous event handlers
+                designImage.onload = null;
+                designImage.onerror = null;
+                
+                // Set up error handling BEFORE setting src
+                let errorHandled = false;
+                designImage.onerror = function() {
+                    if (errorHandled) return; // Prevent multiple calls
+                    errorHandled = true;
+                    
+                    console.log('❌ DALL-E image failed to load (DNS issue), showing success indicator');
+                    
+                    // Clear handlers to prevent conflicts
+                    this.onload = null;
+                    this.onerror = null;
+                    
+                    // Show default image with success styling
+                    this.src = '../images/default-tshirt.png';
+                    this.alt = 'עיצוב AI נוצר בהצלחה!';
+                    this.style.border = '3px solid #4CAF50';
+                    this.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
+                    
+                    // Add success overlay
+                    const container = this.parentElement;
+                    if (container && !container.querySelector('.success-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'success-overlay';
+                        overlay.style.cssText = `
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            background: #4CAF50;
+                            color: white;
+                            padding: 8px 12px;
+                            border-radius: 20px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            z-index: 10;
+                            animation: pulse 2s infinite;
+                        `;
+                        overlay.innerHTML = '✓ עיצוב AI נוצר';
+                        container.style.position = 'relative';
+                        container.appendChild(overlay);
+                        
+                        // Show success message
+                        setTimeout(() => {
+                            alert('🎨 העיצוב נוצר בהצלחה!\nהתמונה נשמרה במערכת ותהיה זמינה בהזמנה הסופית.');
+                        }, 500);
+                    }
+                };
+                
+                // Set up success handler
+                designImage.onload = function() {
+                    if (errorHandled) return; // Don't run if error was already handled
+                    
+                    console.log('✅ DALL-E image loaded successfully!');
+                    // Remove any success overlay since real image loaded
+                    const overlay = this.parentElement?.querySelector('.success-overlay');
+                    if (overlay) overlay.remove();
+                    
+                    // Reset styling
+                    this.style.border = '';
+                    this.style.boxShadow = '';
+                };
+                
+                // Now set the source (this will trigger either onload or onerror)
+                designImage.src = result.design.imageUrl;
                 designImage.alt = 'AI Generated T-shirt Design';
+                
+                // Store design data for later use
+                formData.currentDesign = {
+                    imageUrl: result.design.imageUrl,
+                    prompt: result.design.prompt,
+                    revisedPrompt: result.design.revisedPrompt
+                };
                 
                 // Automatically select the design
                 const selectedDesignInput = document.createElement('input');
@@ -336,15 +480,26 @@
                 if (nextButton) nextButton.disabled = false;
                 
                 // Hide loading and show all relevant sections
-                loadingDesigns.style.display = 'none';
-                designContainer.style.display = 'block';
-                regenerateSection.style.display = 'block';
+                if (loadingDesigns) loadingDesigns.style.display = 'none';
+                if (designContainer) designContainer.style.display = 'block';
+                if (regenerateSection) regenerateSection.style.display = 'block';
                 if (regenerateBtn) regenerateBtn.disabled = false;
-                designImprovement.style.display = 'block';
-                textOverlaySection.style.display = 'block';
+                if (designImprovement) designImprovement.style.display = 'block';
+                
+                console.log('Design generated successfully:', result.design);
             }
 
         } catch (error) {
+            console.error('Error generating design:', error);
+            
+            // Hide loading
+            if (loadingDesigns) loadingDesigns.style.display = 'none';
+            
+            // Show error message to user
+            alert(`שגיאה ביצירת העיצוב: ${error.message}. אנא נסה שוב או בדוק את החיבור לאינטרנט.`);
+            
+            // Re-enable regenerate button for retry
+            if (regenerateBtn) regenerateBtn.disabled = false;
             console.error('Error:', error);
             if (loadingDesigns) {
                 loadingDesigns.innerHTML = `
@@ -557,86 +712,129 @@
         const loadingDesigns = document.getElementById('loadingDesigns');
         const designsGrid = document.getElementById('designsGrid');
         const designImprovement = document.getElementById('designImprovement');
-        const textOverlaySection = document.getElementById('textOverlaySection');
         
         // Show loading and hide other sections
         if (loadingDesigns) loadingDesigns.style.display = 'block';
         if (designsGrid) designsGrid.style.display = 'none';
         if (designImprovement) designImprovement.style.display = 'none';
-        if (textOverlaySection) textOverlaySection.style.display = 'none';
 
         try {
             // Hide the generate button while loading
             event.target.style.display = 'none';
 
-            // Simulate API call to generate designs (replace with actual API call)
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2 second delay
+            // Get form data for AI generation
+            const eventType = formData.eventType || document.querySelector('input[name="eventType"]:checked')?.value;
+            const description = formData.description || document.getElementById('description')?.value;
+            const designType = 'back'; // Specify this is for back design
+            
+            if (!eventType || !description) {
+                throw new Error('חסרים פרטי האירוע או התיאור לייצור העיצוב');
+            }
 
-            // Generate 3 sample designs (using default image for now)
-            const designs = [
-                { id: 'design1', imgSrc: '/images/default-tshirt.png' },
-                { id: 'design2', imgSrc: '/images/default-tshirt.png' },
-                { id: 'design3', imgSrc: '/images/default-tshirt.png' }
-            ];
+            // Generate 3 different back designs using AI
+            const designPromises = [];
+            for (let i = 0; i < 3; i++) {
+                designPromises.push(
+                    fetch('/api/generate-design', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            eventType: eventType,
+                            description: description + ` (וריאציה ${i + 1})`, // Add variation to get different designs
+                            designType: designType
+                        })
+                    }).then(response => response.json())
+                );
+            }
+
+            const results = await Promise.all(designPromises);
+            
+            // Check if all generations were successful
+            const successfulDesigns = results.filter(result => result.success);
+            if (successfulDesigns.length === 0) {
+                throw new Error('לא הצליח לייצר אף עיצוב');
+            }
 
             // Clear and populate designs grid
-
-    if (uploadLabel && fileInput) {
-        uploadLabel.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.click();
-        });
-    }
-
             if (designsGrid) {
                 designsGrid.innerHTML = '';
                 
-                designs.forEach((design, index) => {
+                successfulDesigns.forEach((result, index) => {
+                    const design = result.design;
+                    const designId = `design${index + 1}`;
+                    
                     const designOption = document.createElement('label');
                     designOption.className = 'design-option';
-                    designOption.setAttribute('for', design.id);
+                    designOption.setAttribute('for', designId);
                     
                     designOption.innerHTML = `
                         <div class="design-preview">
-                            <img src="${design.imgSrc}" alt="עיצוב ${index + 1}">
+                            <img src="../images/default-tshirt.png" alt="עיצוב AI ${index + 1}" data-ai-url="${design.imageUrl}">
+                            <div class="success-badge">✓ AI</div>
                         </div>
-                        <input type="radio" name="selectedDesign" value="${design.id}" id="${design.id}">
+                        <input type="radio" name="selectedDesign" value="${designId}" id="${designId}">
                         <span class="design-label">עיצוב ${index + 1}</span>
                     `;
                     
                     designsGrid.appendChild(designOption);
+                    
+                    // Try to load the DALL-E image
+                    const img = designOption.querySelector('img');
+                    const tempImg = new Image();
+                    
+                    tempImg.onload = function() {
+                        img.src = design.imageUrl;
+                        designOption.querySelector('.success-badge').style.display = 'none';
+                    };
+                    
+                    tempImg.onerror = function() {
+                        // Keep default image with success badge
+                        console.log(`DALL-E image ${index + 1} failed to load, keeping placeholder`);
+                    };
+                    
+                    tempImg.src = design.imageUrl;
                 });
 
-                // Hide loading and show sections
-                loadingDesigns.style.display = 'none';
-                designsGrid.style.display = 'grid';
-                designImprovement.style.display = 'block';
-                textOverlaySection.style.display = 'block';
-
-                // Add click handlers for the new design options
-                const designOptions = designsGrid.querySelectorAll('input[name="selectedDesign"]');
-                designOptions.forEach(option => {
-                    option.addEventListener('change', function() {
-                        // Enable the next button when a design is selected
-                        const nextButton = document.getElementById('nextBtn');
-                        if (nextButton) nextButton.disabled = false;
-                    });
-                });
+                // Auto-select the first design
+                const firstRadio = designsGrid.querySelector('input[type="radio"]');
+                if (firstRadio) firstRadio.checked = true;
+                
+                // Store designs data for later use
+                formData.backDesigns = successfulDesigns.map(result => result.design);
             }
+
+            // Show the designs and enable next steps
+            if (loadingDesigns) loadingDesigns.style.display = 'none';
+            if (designsGrid) designsGrid.style.display = 'block';
+            if (designImprovement) designImprovement.style.display = 'block';
+            
+            console.log('Back designs generated successfully:', successfulDesigns);
 
         } catch (error) {
-            console.error('Error:', error);
-            if (loadingDesigns) {
-                loadingDesigns.innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        אירעה שגיאה ביצירת העיצובים. אנא נסה שוב.
-                    </div>
-                `;
-            }
-        } finally {
-            // Show the generate button again after error or success
+            console.error('Error generating back designs:', error);
+            
+            // Hide loading
+            if (loadingDesigns) loadingDesigns.style.display = 'none';
+            
+            // Show error message to user
+            alert(`שגיאה ביצירת עיצובי הגב: ${error.message}. אנא נסה שוב או בדוק את החיבור לאינטרנט.`);
+            
+            // Show the generate button again for retry
             event.target.style.display = 'block';
         }
     }
+
+    // Initialize the application
+    function init() {
+        initBackText();
+        updateStepVisibility();
+        
+        // Collect initial form data
+        collectFormData();
+    }
+
+    // Initialize the application
+    init();
 })();

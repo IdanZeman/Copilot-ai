@@ -173,8 +173,8 @@ async function generateImageWithDallE(prompt, options = {}) {
     }
 
     const {
-        width = 512,  // Reduced size for initial designs
-        height = 512, // Reduced size for initial designs
+        width = 1024,  // Updated for DALL-E 3 compatibility
+        height = 1024, // Updated for DALL-E 3 compatibility
         model = "dall-e-3",
         quality = "standard" // Always use standard quality
     } = options;
@@ -303,11 +303,12 @@ async function improveDesign(designHistory, improvementFeedback, options = {}) {
 }
 
 // Export functions for use in other files
-module.exports = {
+export {
     generateTShirtDesignPrompt,
     enhancePromptWithStyle,
     generateImageWithDallE,
     createTShirtDesign,
     improveDesign,
+    translateWithChatGPT,
     styleModifiers
 };

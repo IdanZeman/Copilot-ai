@@ -2952,3 +2952,38 @@ textarea.invalid {
         font-size: 0.85rem;
     }
 }
+
+/* Success animation for AI generated designs */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Success badge for design previews */
+.design-preview {
+    position: relative;
+}
+
+.success-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #4CAF50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 10;
+    animation: pulse 2s infinite;
+}

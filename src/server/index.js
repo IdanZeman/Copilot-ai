@@ -14,6 +14,62 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
+// Content Security Policy to allow external images
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self'; " +
+        "img-src 'self' data: https://oaidalleapiprodscus.blob.core.windows.net https://*.openai.com https://*.blob.core.windows.net; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
+        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+        "connect-src 'self';"
+    );
+    next();
+});
+
+// Request logging middleware
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
+// Simple image proxy route directly on main app
+app.get('/image-proxy', async (req, res) => {
+    console.log('IMAGE PROXY ENDPOINT HIT!', req.query.url);
+    try {
+        const imageUrl = req.query.url;
+        if (!imageUrl) {
+            console.log('No URL provided');
+            return res.status(400).json({ error: 'Missing image URL' });
+        }
+        
+        console.log('Proxying image request for:', imageUrl);
+        
+        const response = await fetch(imageUrl);
+        console.log('Fetch response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // Set appropriate headers
+        res.set({
+            'Content-Type': response.headers.get('content-type') || 'image/png',
+            'Cache-Control': 'public, max-age=3600',
+            'Access-Control-Allow-Origin': '*'
+        });
+        
+        // Pipe the image data
+        const buffer = await response.arrayBuffer();
+        console.log('Image buffer size:', buffer.byteLength);
+        res.send(Buffer.from(buffer));
+        
+    } catch (error) {
+        console.error('Image proxy error:', error);
+        res.status(500).json({ error: 'Failed to proxy image: ' + error.message });
+    }
+});
+
 // Serve static files from public directory with correct MIME types
 const staticOptions = {
     setHeaders: (res, path) => {
@@ -33,7 +89,9 @@ const staticOptions = {
 app.use(express.static(path.join(rootDir, 'public'), staticOptions));
 
 // API Routes
+console.log('Mounting AI service on /api');
 app.use('/api', aiService);
+console.log('API routes mounted successfully');
 
 // Serve HTML files
 app.get('/', (req, res) => {
@@ -76,4 +134,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`Root directory: ${rootDir}`);
+    console.log('TESTING: Server should have the test-image-proxy route now');
 });

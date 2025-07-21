@@ -1,16 +1,25 @@
 import 'dotenv/config';
+import { generateTShirtDesignPrompt, generateImageWithDallE, translateWithChatGPT } from '../../ai-prompt-generator.js';
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 async function generateDesign(eventType, description, designType) {
     try {
-        // Implementation moved from ai-prompt-generator.js
-        const prompt = await generateTShirtDesignPrompt({ eventType, description }, { 
+        // Prepare design data
+        const designData = {
+            eventType: eventType,
+            description: description
+        };
+
+        // Generate the prompt using the existing function
+        const prompt = await generateTShirtDesignPrompt(designData, { 
             isBackDesign: designType === 'back' 
         });
-        
+
+        // Generate image using DALL-E
         const imageResult = await generateImageWithDallE(prompt, {
-            width: 512,
-            height: 512,
+            width: 1024,
+            height: 1024,
             model: "dall-e-3",
             quality: "standard"
         });
@@ -28,13 +37,34 @@ async function generateDesign(eventType, description, designType) {
 
 async function improveDesign(designHistory, improvementFeedback) {
     try {
-        // Implementation moved from ai-prompt-generator.js
+        // Translate feedback to English if needed
         const translatedFeedback = await translateWithChatGPT(improvementFeedback);
         
-        // Rest of the improve design logic...
+        // Create improved prompt based on feedback
+        const improvedPromptData = {
+            eventType: designHistory.eventType || 'general',
+            description: `${designHistory.description}. Improvements: ${translatedFeedback}`,
+            previousPrompt: designHistory.prompt
+        };
+        
+        // Generate improved prompt
+        const improvedPrompt = await generateTShirtDesignPrompt(improvedPromptData, {
+            isBackDesign: designHistory.designType === 'back'
+        });
+        
+        // Generate new image with improved prompt
+        const imageResult = await generateImageWithDallE(improvedPrompt, {
+            width: 1024,
+            height: 1024,
+            model: "dall-e-3",
+            quality: "standard"
+        });
         
         return {
-            // improved design details
+            imageUrl: imageResult.url,
+            prompt: improvedPrompt,
+            revisedPrompt: imageResult.revisedPrompt,
+            feedback: translatedFeedback
         };
     } catch (error) {
         console.error('OpenAI improvement error:', error);
