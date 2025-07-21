@@ -14,8 +14,23 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
-// Serve static files from public directory
-app.use(express.static(path.join(rootDir, 'public')));
+// Serve static files from public directory with correct MIME types
+const staticOptions = {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        } else if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        } else if (path.endsWith('.html')) {
+            res.setHeader('Content-Type', 'text/html');
+        } else if (path.endsWith('.ico')) {
+            res.setHeader('Content-Type', 'image/x-icon');
+        }
+    }
+};
+
+// Serve static files directly from public directory
+app.use(express.static(path.join(rootDir, 'public'), staticOptions));
 
 // API Routes
 app.use('/api', aiService);

@@ -1,5 +1,5 @@
 // Import auth-related functionality
-import { setupAuthLinks } from '../../src/client/auth-ui.js';
+import { setupAuthLinks } from './auth-ui.js';
 
 // Global variables
 let currentStep = 1;
