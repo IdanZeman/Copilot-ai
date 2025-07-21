@@ -2424,8 +2424,24 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('/images/pattern.png');
-    opacity: 0.1;
+    background: 
+        linear-gradient(45deg, 
+            rgba(102, 126, 234, 0.05) 25%, 
+            transparent 25%, 
+            transparent 75%, 
+            rgba(102, 126, 234, 0.05) 75%, 
+            rgba(102, 126, 234, 0.05)
+        ),
+        linear-gradient(45deg, 
+            rgba(102, 126, 234, 0.05) 25%, 
+            transparent 25%, 
+            transparent 75%, 
+            rgba(102, 126, 234, 0.05) 75%, 
+            rgba(102, 126, 234, 0.05)
+        );
+    background-size: 60px 60px;
+    background-position: 0 0, 30px 30px;
+    opacity: 0.15;
 }
 
 .hero-content {
