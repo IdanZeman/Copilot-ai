@@ -1,5 +1,6 @@
 // Import auth-related functionality
 import { setupAuthLinks, requireAuthentication, isUserLoggedIn, getCurrentUser } from './auth-ui.js';
+import { showWarningNotification, showErrorNotification, showSimpleSuccessNotification } from './notifications.js';
 
 // Global variables
 let currentStep = 1;
@@ -167,7 +168,7 @@ function validateDesignSelection() {
     // Step 1: Event Type selection
     const eventType = document.querySelector('input[name="eventType"]:checked');
     if (!eventType) {
-        alert('אנא בחר סוג אירוע');
+        showWarningNotification('אנא בחר סוג אירוע');
         return false;
     }
     
@@ -175,7 +176,7 @@ function validateDesignSelection() {
     if (eventType.value === 'other') {
         const customEventType = document.getElementById('customEventType').value.trim();
         if (!customEventType) {
-            alert('אנא תאר את סוג האירוע');
+            showWarningNotification('אנא תאר את סוג האירוע');
             return false;
         }
     }
@@ -188,12 +189,12 @@ function validateSizeSelection() {
     // Step 2: Description validation
     const description = document.getElementById('description').value.trim();
     if (!description) {
-        alert('אנא תאר מה החולצה צריכה לבטא');
+        showWarningNotification('אנא תאר מה החולצה צריכה לבטא');
         return false;
     }
     
     if (description.length < 10) {
-        alert('אנא הכנס תיאור מפורט יותר (לפחות 10 תווים)');
+        showWarningNotification('אנא הכנס תיאור מפורט יותר (לפחות 10 תווים)');
         return false;
     }
     
@@ -209,7 +210,7 @@ function validateColorSelection() {
     // Check if a design has been generated and selected
     if (!designContainer || designContainer.style.display === 'none' || 
         !designImage || designImage.src.includes('default-tshirt.png')) {
-        alert('אנא צור עיצוב לחלק האחורי של החולצה');
+        showWarningNotification('אנא צור עיצוב לחלק האחורי של החולצה');
         return false;
     }
     
@@ -218,7 +219,7 @@ function validateColorSelection() {
     if (backTextPosition && backTextPosition.value !== 'none') {
         const backText = document.getElementById('backText').value.trim();
         if (!backText) {
-            alert('אנא הכנס את הטקסט לחלק האחורי');
+            showWarningNotification('אנא הכנס את הטקסט לחלק האחורי');
             return false;
         }
         formData.backText = backText;
@@ -233,7 +234,7 @@ function validateQuantity() {
     // Step 4: Front design validation
     const frontOption = document.querySelector('input[name="frontOption"]:checked');
     if (!frontOption) {
-        alert('אנא בחר אפשרות עיצוב לחלק הקדמי');
+        showWarningNotification('אנא בחר אפשרות עיצוב לחלק הקדמי');
         return false;
     }
     
@@ -241,13 +242,13 @@ function validateQuantity() {
     if (frontOption.value === 'upload') {
         const uploadInput = document.getElementById('frontUpload');
         if (!uploadInput.files || uploadInput.files.length === 0) {
-            alert('אנא העלה תמונה לחלק הקדמי');
+            showWarningNotification('אנא העלה תמונה לחלק הקדמי');
             return false;
         }
     } else if (frontOption.value === 'ai') {
         const aiFrontDesign = document.querySelector('input[name="aiFrontDesign"]:checked');
         if (!aiFrontDesign) {
-            alert('אנא בחר אחד מהעיצובים שנוצרו על ידי AI');
+            showWarningNotification('אנא בחר אחד מהעיצובים שנוצרו על ידי AI');
             return false;
         }
     }
@@ -257,7 +258,7 @@ function validateQuantity() {
     if (frontTextPosition && frontTextPosition.value !== 'none') {
         const frontText = document.getElementById('frontOverlayText').value.trim();
         if (!frontText) {
-            alert('אנא הכנס את הטקסט לחלק הקדמי');
+            showWarningNotification('אנא הכנס את הטקסט לחלק הקדמי');
             return false;
         }
         formData.frontText = frontText;
@@ -274,14 +275,14 @@ function validateContactInfo() {
     // Validate shirt color selection
     const shirtColor = document.querySelector('input[name="shirtColor"]:checked');
     if (!shirtColor) {
-        alert('אנא בחר צבע חולצה');
+        showWarningNotification('אנא בחר צבע חולצה');
         return false;
     }
     
     // Validate design color selection
     const designColor = document.querySelector('input[name="designColor"]:checked');
     if (!designColor) {
-        alert('אנא בחר צבע גלופה');
+        showWarningNotification('אנא בחר צבע גלופה');
         return false;
     }
     
@@ -293,7 +294,7 @@ function validateContactInfo() {
     });
     
     if (totalQuantity === 0) {
-        alert('אנא הכנס כמות לפחות במידה אחת');
+        showWarningNotification('אנא הכנס כמות לפחות במידה אחת');
         return false;
     }
     
@@ -303,17 +304,17 @@ function validateContactInfo() {
     const phone = document.querySelector('input[name="customerPhone"]').value.trim();
     
     if (!name || !email || !phone) {
-        alert('אנא מלא את כל פרטי הקשר');
+        showWarningNotification('אנא מלא את כל פרטי הקשר');
         return false;
     }
     
     if (!validateEmail(email)) {
-        alert('אנא הכנס כתובת אימייל תקינה');
+        showWarningNotification('אנא הכנס כתובת אימייל תקינה');
         return false;
     }
     
     if (!validatePhone(phone)) {
-        alert('אנא הכנס מספר טלפון תקין');
+        showWarningNotification('אנא הכנס מספר טלפון תקין');
         return false;
     }
     
@@ -401,7 +402,7 @@ async function generateDesign() {
     // No need to check authentication here since form is blocked for guests
     const prompt = document.getElementById('design-prompt').value.trim();
     if (!prompt) {
-        alert('אנא הכנס תיאור לעיצוב המבוקש');
+        showWarningNotification('אנא הכנס תיאור לעיצוב המבוקש');
         return;
     }
     
@@ -415,7 +416,7 @@ async function generateDesign() {
         document.querySelector('.loading-designs').style.display = 'none';
     } catch (error) {
         console.error('Error generating designs:', error);
-        alert('אירעה שגיאה בעת יצירת העיצובים. אנא נסה שוב מאוחר יותר.');
+        showErrorNotification('שגיאה', 'אירעה שגיאה בעת יצירת העיצובים. אנא נסה שוב מאוחר יותר.');
     }
 }
 
@@ -424,7 +425,7 @@ async function generateBackDesign() {
     // No need to check authentication here since form is blocked for guests
     const description = document.getElementById('description').value.trim();
     if (!description) {
-        alert('אנא מלא תחילה את השלב הקודם עם תיאור העיצוב');
+        showWarningNotification('אנא מלא תחילה את השלב הקודם עם תיאור העיצוב');
         return;
     }
     
@@ -444,11 +445,11 @@ async function generateBackDesign() {
         const designImage = document.getElementById('designImage');
         designImage.src = 'https://via.placeholder.com/300x300/4a90e2/ffffff?text=AI+Generated+Design';
         
-        alert('העיצוב נוצר בהצלחה! ניתן להמשיך לשלב הבא');
+        showSimpleSuccessNotification('העיצוב נוצר בהצלחה! ניתן להמשיך לשלב הבא');
         
     } catch (error) {
         console.error('Error generating back design:', error);
-        alert('אירעה שגיאה ביצירת העיצוב. אנא נסה שוב מאוחר יותר.');
+        showErrorNotification('שגיאה', 'אירעה שגיאה ביצירת העיצוב. אנא נסה שוב מאוחר יותר.');
         document.getElementById('loadingDesigns').style.display = 'none';
     }
 }

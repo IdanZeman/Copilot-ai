@@ -10,7 +10,7 @@ import {
 } from './firebase-auth.js';
 
 // Import notification system
-import { showLoginSuccessNotification, showErrorNotification } from './notifications.js';
+import { showLoginSuccessNotification, showErrorNotification, showWarningNotification } from './notifications.js';
 
 // User state management
 let currentUser = null;
@@ -42,7 +42,7 @@ export async function logoutUser() {
     if (result.success) {
         updateUIForLoggedOutUser();
     } else {
-        alert('שגיאה בהתנתקות: ' + result.error);
+        showErrorNotification('שגיאה בהתנתקות', result.error);
     }
 }
 
@@ -251,7 +251,7 @@ export function setupAuthLinks() {
                 const result = await logoutUser();
                 
                 if (result && result.success === false) {
-                    alert('שגיאה בהתנתקות: ' + result.error);
+                    showErrorNotification('שגיאה בהתנתקות', result.error);
                 }
                 
                 // Redirect to home if on order form
@@ -385,7 +385,7 @@ function setupModalEvents(modal) {
                 
             } catch (error) {
                 console.error('Login error:', error);
-                alert('אירעה שגיאה בהתחברות. אנא נסה שוב.');
+                showErrorNotification('שגיאה בהתחברות', 'אירעה שגיאה בהתחברות. אנא נסה שוב.');
             }
             
             // Reset button state

@@ -274,6 +274,144 @@ export function showErrorNotification(title, message) {
     return notification;
 }
 
+// Show warning notification (for validation errors)
+export function showWarningNotification(message) {
+    initNotificationContainer();
+    
+    const notification = document.createElement('div');
+    notification.className = 'success-notification';
+    notification.style.background = 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)';
+    notification.style.pointerEvents = 'auto';
+    
+    notification.innerHTML = 
+        '<button class="notification-close" onclick="this.parentElement.remove()">' +
+            '<i class="fas fa-times"></i>' +
+        '</button>' +
+        
+        '<div class="notification-header">' +
+            '<div class="notification-icon">' +
+                '<i class="fas fa-exclamation-circle"></i>' +
+            '</div>' +
+            '<div class="notification-content">' +
+                '<h3>שים לב</h3>' +
+                '<p>' + message + '</p>' +
+            '</div>' +
+        '</div>';
+    
+    notificationContainer.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.classList.add('hide');
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 400);
+        }
+    }, 4000);
+    
+    return notification;
+}
+
+// Show simple success notification
+export function showSimpleSuccessNotification(message) {
+    initNotificationContainer();
+    
+    const notification = document.createElement('div');
+    notification.className = 'success-notification';
+    notification.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
+    notification.style.pointerEvents = 'auto';
+    
+    notification.innerHTML = 
+        '<button class="notification-close" onclick="this.parentElement.remove()">' +
+            '<i class="fas fa-times"></i>' +
+        '</button>' +
+        
+        '<div class="notification-header">' +
+            '<div class="notification-icon">' +
+                '<i class="fas fa-check-circle"></i>' +
+            '</div>' +
+            '<div class="notification-content">' +
+                '<h3>מעולה!</h3>' +
+                '<p>' + message + '</p>' +
+            '</div>' +
+        '</div>';
+    
+    notificationContainer.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.classList.add('hide');
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 400);
+        }
+    }, 3000);
+    
+    return notification;
+}
+
+// Show info notification (blue)
+export function showInfoNotification(title, message) {
+    initNotificationContainer();
+    
+    const notification = document.createElement('div');
+    notification.className = 'success-notification';
+    notification.style.background = 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)';
+    notification.style.pointerEvents = 'auto';
+    
+    notification.innerHTML = 
+        '<button class="notification-close" onclick="this.parentElement.remove()">' +
+            '<i class="fas fa-times"></i>' +
+        '</button>' +
+        
+        '<div class="notification-header">' +
+            '<div class="notification-icon">' +
+                '<i class="fas fa-info-circle"></i>' +
+            '</div>' +
+            '<div class="notification-content">' +
+                '<h3>' + title + '</h3>' +
+                '<p>' + message + '</p>' +
+            '</div>' +
+        '</div>';
+    
+    notificationContainer.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.classList.add('hide');
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 400);
+        }
+    }, 4000);
+    
+    return notification;
+}
+
 // Helper function for "start designing" button
 window.startDesigning = function() {
     // Remove notification
