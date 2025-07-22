@@ -482,12 +482,20 @@ function toggleSizeChart() {
 }
 
 // Gallery selection
-function selectDesign(designId) {
-    selectedDesign = designId;
+function selectDesign(element) {
+    // Remove selected class from all options
     document.querySelectorAll('.design-option').forEach(option => {
         option.classList.remove('selected');
     });
-    document.querySelector(`#design-${designId}`).classList.add('selected');
+    
+    // Add selected class to clicked option
+    element.classList.add('selected');
+    selectedDesign = element;
+    
+    // Update front preview for AI designs
+    updateFrontPreview();
+    
+    console.log('Design selected:', element);
 }
 
 // AI design generation
