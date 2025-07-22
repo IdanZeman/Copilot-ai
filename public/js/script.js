@@ -421,6 +421,9 @@ function showDesignMethod(method) {
 function updateFrontPreview() {
     const frontPreview = document.getElementById('frontPreview');
     const previewIcon = document.getElementById('previewIcon');
+    const previewTopCaption = document.getElementById('previewTopCaption');
+    const previewBottomCaption = document.getElementById('previewBottomCaption');
+    
     if (!frontPreview || !previewIcon) return;
     
     // Get selected design method
@@ -449,7 +452,64 @@ function updateFrontPreview() {
         }
     }
     
+    // Update text overlay
+    updateFrontTextPreview();
+    
     console.log('Front preview updated');
+}
+
+// Update front text preview
+function updateFrontTextPreview() {
+    const previewTopCaption = document.getElementById('previewTopCaption');
+    const previewBottomCaption = document.getElementById('previewBottomCaption');
+    const frontTextPosition = document.querySelector('input[name="frontTextPosition"]:checked');
+    const frontOverlayText = document.getElementById('frontOverlayText');
+    
+    if (!previewTopCaption || !previewBottomCaption) return;
+    
+    // Clear previous text
+    previewTopCaption.textContent = '';
+    previewBottomCaption.textContent = '';
+    
+    if (frontTextPosition && frontTextPosition.value !== 'none' && frontOverlayText) {
+        const text = frontOverlayText.value.trim();
+        if (text) {
+            if (frontTextPosition.value === 'above') {
+                previewTopCaption.textContent = text;
+            } else if (frontTextPosition.value === 'below') {
+                previewBottomCaption.textContent = text;
+            }
+        }
+    }
+    
+    console.log('Front text preview updated');
+}
+
+// Update back text preview
+function updateBackTextPreview() {
+    const backPreviewTopCaption = document.getElementById('backPreviewTopCaption');
+    const backPreviewBottomCaption = document.getElementById('backPreviewBottomCaption');
+    const backTextPosition = document.querySelector('input[name="backTextPosition"]:checked');
+    const backText = document.getElementById('backText');
+    
+    if (!backPreviewTopCaption || !backPreviewBottomCaption) return;
+    
+    // Clear previous text
+    backPreviewTopCaption.textContent = '';
+    backPreviewBottomCaption.textContent = '';
+    
+    if (backTextPosition && backTextPosition.value !== 'none' && backText) {
+        const text = backText.value.trim();
+        if (text) {
+            if (backTextPosition.value === 'above') {
+                backPreviewTopCaption.textContent = text;
+            } else if (backTextPosition.value === 'below') {
+                backPreviewBottomCaption.textContent = text;
+            }
+        }
+    }
+    
+    console.log('Back text preview updated');
 }
 
 // File upload handling
@@ -928,6 +988,35 @@ function initForm(skipAuthCheck = false) {
         });
     });
     
+    // Setup event listeners for front text position
+    document.querySelectorAll('input[name="frontTextPosition"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+            const frontOverlayTextInput = document.getElementById('frontOverlayTextInput');
+            if (e.target.value !== 'none') {
+                frontOverlayTextInput.style.display = 'block';
+            } else {
+                frontOverlayTextInput.style.display = 'none';
+            }
+            // Update text preview
+            updateFrontTextPreview();
+        });
+    });
+    
+    // Setup event listener for front overlay text input
+    const frontOverlayText = document.getElementById('frontOverlayText');
+    if (frontOverlayText) {
+        frontOverlayText.addEventListener('input', () => {
+            // Update character counter
+            const count = frontOverlayText.value.length;
+            const frontOverlayTextCount = document.getElementById('frontOverlayTextCount');
+            if (frontOverlayTextCount) {
+                frontOverlayTextCount.textContent = count;
+            }
+            // Update text preview
+            updateFrontTextPreview();
+        });
+    }
+    
     // Event type "other" option handling
     document.querySelectorAll('input[name="eventType"]').forEach(input => {
         input.addEventListener('change', (e) => {
@@ -984,6 +1073,8 @@ function initForm(skipAuthCheck = false) {
             } else {
                 backTextInput.style.display = 'none';
             }
+            // Update back text preview
+            updateBackTextPreview();
         });
     });
     
@@ -996,6 +1087,8 @@ function initForm(skipAuthCheck = false) {
             if (backTextCount) {
                 backTextCount.textContent = count;
             }
+            // Update back text preview
+            updateBackTextPreview();
         });
     }
     
