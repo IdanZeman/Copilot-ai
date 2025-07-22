@@ -420,6 +420,20 @@ function selectDesign(designId) {
 
 // AI design generation
 async function generateDesign() {
+    // Check usage limits before generating
+    try {
+        const { checkUsageLimit, recordUsage } = await import('./usage-tracker.js');
+        
+        const canGenerate = await checkUsageLimit();
+        if (!canGenerate) {
+            return; // Error message already shown by checkUsageLimit
+        }
+    } catch (error) {
+        console.error('Error checking usage limits:', error);
+        showErrorNotification('שגיאה', 'בעיה בבדיקת מגבלות השימוש');
+        return;
+    }
+    
     // No need to check authentication here since form is blocked for guests
     const prompt = document.getElementById('design-prompt').value.trim();
     if (!prompt) {
@@ -429,12 +443,27 @@ async function generateDesign() {
     
     try {
         document.querySelector('.loading-designs').style.display = 'block';
+        
+        // Record usage before generating
+        try {
+            const { recordUsage } = await import('./usage-tracker.js');
+            await recordUsage();
+        } catch (error) {
+            console.error('Error recording usage:', error);
+        }
+        
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Show generated designs
         document.getElementById('generated-designs').style.display = 'grid';
         document.querySelector('.loading-designs').style.display = 'none';
+        
+        // Update usage badge
+        if (window.updateUsageBadge) {
+            window.updateUsageBadge();
+        }
+        
     } catch (error) {
         console.error('Error generating designs:', error);
         showErrorNotification('שגיאה', 'אירעה שגיאה בעת יצירת העיצובים. אנא נסה שוב מאוחר יותר.');
@@ -443,6 +472,20 @@ async function generateDesign() {
 
 // Generate back design based on description
 async function generateBackDesign() {
+    // Check usage limits before generating
+    try {
+        const { checkUsageLimit, recordUsage } = await import('./usage-tracker.js');
+        
+        const canGenerate = await checkUsageLimit();
+        if (!canGenerate) {
+            return; // Error message already shown by checkUsageLimit
+        }
+    } catch (error) {
+        console.error('Error checking usage limits:', error);
+        showErrorNotification('שגיאה', 'בעיה בבדיקת מגבלות השימוש');
+        return;
+    }
+    
     // No need to check authentication here since form is blocked for guests
     const description = document.getElementById('description').value.trim();
     if (!description) {
@@ -453,6 +496,14 @@ async function generateBackDesign() {
     try {
         document.getElementById('loadingDesigns').style.display = 'block';
         document.getElementById('designContainer').style.display = 'none';
+        
+        // Record usage before generating
+        try {
+            const { recordUsage } = await import('./usage-tracker.js');
+            await recordUsage();
+        } catch (error) {
+            console.error('Error recording usage:', error);
+        }
         
         // Simulate API call for design generation
         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -467,6 +518,11 @@ async function generateBackDesign() {
         designImage.src = 'https://via.placeholder.com/300x300/4a90e2/ffffff?text=AI+Generated+Design';
         
         showSimpleSuccessNotification('העיצוב נוצר בהצלחה! ניתן להמשיך לשלב הבא');
+        
+        // Update usage badge
+        if (window.updateUsageBadge) {
+            window.updateUsageBadge();
+        }
         
     } catch (error) {
         console.error('Error generating back design:', error);

@@ -1,21 +1,234 @@
-// Beautiful notification system
+// Enhanced notification system with improved readability
+export function showNotification(type, title, message = '', duration = 12000) {
+    console.log(`Showing ${type} notification:`, title, message);
+    
+    // Remove any existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
 
-let notificationContainer = null;
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    // Define colors for each type with improved contrast
+    const styles = {
+        success: {
+            background: 'linear-gradient(135deg, #1a4a20 0%, #2d5a3d 100%)',
+            border: '2px solid #27ae60',
+            icon: '✅'
+        },
+        error: {
+            background: 'linear-gradient(135deg, #4a1a1a 0%, #5a2d2d 100%)',
+            border: '2px solid #e74c3c',
+            icon: '❌'
+        },
+        warning: {
+            background: 'linear-gradient(135deg, #4a3a1a 0%, #5a4a2d 100%)',
+            border: '2px solid #f39c12',
+            icon: '⚠️'
+        },
+        info: {
+            background: 'linear-gradient(135deg, #1a3a4a 0%, #2d4a5a 100%)',
+            border: '2px solid #3498db',
+            icon: 'ℹ️'
+        }
+    };
 
-// Initialize notification container
-function initNotificationContainer() {
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'notification-container';
-        notificationContainer.style.cssText = `
-            position: fixed;
-            top: 0;
-            right: 0;
-            z-index: 10000;
-            pointer-events: none;
+    const currentStyle = styles[type] || styles.info;
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${currentStyle.background};
+        color: #ffffff;
+        padding: 20px 25px;
+        border-radius: 12px;
+        border: ${currentStyle.border};
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        min-width: 280px;
+        max-width: 350px;
+        max-height: 80vh;
+        overflow-y: auto;
+        font-family: 'Segoe UI', 'Arial', 'Helvetica', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.5;
+        text-align: right;
+        direction: rtl;
+        backdrop-filter: blur(15px);
+        animation: slideIn 0.4s ease-out;
+        transition: all 0.3s ease;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    `;
+
+    // Add animation keyframes
+    if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            .notification:hover {
+                transform: translateX(-10px);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3);
+            }
         `;
-        document.body.appendChild(notificationContainer);
+        document.head.appendChild(style);
     }
+
+    // Create notification content with improved typography
+    const content = `
+        <div style="position: relative;">
+            <button style="
+                position: absolute;
+                top: -5px;
+                left: -5px;
+                background: rgba(255,255,255,0.2);
+                border: none;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                color: #ffffff;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+                z-index: 10001;
+            " 
+            onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'"
+            onclick="this.closest('.notification').click()">✕</button>
+            
+            <div style="display: flex; align-items: flex-start; gap: 12px; padding-right: 10px;">
+                <div style="font-size: 24px; line-height: 1; margin-top: 2px;">
+                    ${currentStyle.icon}
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); color: #ffffff;">
+                        ${title}
+                    </div>
+                    ${message ? `<div style="font-size: 13px; line-height: 1.6; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,0.7); font-weight: 400;">${message}</div>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    notification.innerHTML = content;
+
+    // Add click to close functionality
+    notification.addEventListener('click', () => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    });
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Auto remove after duration (increased to 12 seconds for better readability)
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, duration);
+
+    return notification;
+}
+
+// Specific notification functions with enhanced messaging
+export function showSuccessNotification(title, message = '', duration = 12000) {
+    return showNotification('success', title, message, duration);
+}
+
+export function showErrorNotification(title, message = '', duration = 12000) {
+    return showNotification('error', title, message, duration);
+}
+
+export function showWarningNotification(message, duration = 12000) {
+    return showNotification('warning', 'אזהרה', message, duration);
+}
+
+export function showInfoNotification(title, message = '', duration = 12000) {
+    return showNotification('info', title, message, duration);
+}
+
+// Simple success notification (alias for backward compatibility)
+export function showSimpleSuccessNotification(message, duration = 8000) {
+    return showNotification('success', 'הצלחה', message, duration);
+}
+
+// Special notification for usage limits with enhanced styling
+export function showUsageLimitNotification(type, used, limit, timeframe) {
+    const icon = type === 'warning' ? '⚠️' : '❌';
+    const title = type === 'warning' ? 'התקרבת למגבלה' : 'הגעת למגבלה';
+    
+    const message = `
+        <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin: 10px 0;">
+            <div style="font-size: 16px; margin-bottom: 8px;">
+                השתמשת ב-<strong>${used}</strong> מתוך <strong>${limit}</strong> עיצובים ${timeframe}
+            </div>
+            <div style="font-size: 14px; color: #ecf0f1;">
+                ${type === 'warning' ? 
+                    `נותרו לך עוד ${limit - used} עיצובים ${timeframe}` :
+                    `המתן ${timeframe === 'השעה' ? 'לשעה הבאה' : 'למחר'} כדי להמשיך לעצב`
+                }
+            </div>
+        </div>
+    `;
+
+    return showNotification(type, title, message, 12000);
+}
+
+// Show login success notification with confetti effect
+export function showLoginSuccessNotification(user) {
+    const displayName = user.displayName || user.email?.split('@')[0] || 'משתמש';
+    
+    // Create confetti effect
+    createConfettiEffect();
+    
+    const message = `
+        <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center;">
+            <div style="font-size: 18px; margin-bottom: 8px;">
+                🎉 ברוך הבא, <strong>${displayName}</strong>!
+            </div>
+            <div style="font-size: 14px; color: #ecf0f1;">
+                התחברת בהצלחה למערכת עיצוב החולצות
+            </div>
+        </div>
+    `;
+
+    return showNotification('success', 'התחברות בוצעה בהצלחה', message, 8000);
 }
 
 // Create confetti effect
@@ -49,6 +262,20 @@ function createConfettiEffect() {
         confettiContainer.appendChild(confetti);
     }
     
+    // Add animation keyframes
+    if (!document.querySelector('#confetti-styles')) {
+        const style = document.createElement('style');
+        style.id = 'confetti-styles';
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
     // Remove confetti after animation
     setTimeout(() => {
         if (confettiContainer.parentElement) {
@@ -62,388 +289,3 @@ function getRandomColor() {
     const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#6c5ce7', '#a29bfe'];
     return colors[Math.floor(Math.random() * colors.length)];
 }
-
-// Play success sound (optional - silent if unavailable)
-function playSuccessSound() {
-    try {
-        // Create a simple success sound using Web Audio API
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Create a sequence of pleasant tones
-        const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 (major chord)
-        
-        frequencies.forEach((freq, index) => {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = freq;
-            oscillator.type = 'sine';
-            
-            // Set volume and timing
-            gainNode.gain.setValueAtTime(0, audioContext.currentTime + index * 0.1);
-            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + index * 0.1 + 0.05);
-            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + index * 0.1 + 0.3);
-            
-            oscillator.start(audioContext.currentTime + index * 0.1);
-            oscillator.stop(audioContext.currentTime + index * 0.1 + 0.3);
-        });
-    } catch (error) {
-        // Silently fail if audio is not supported or blocked
-        console.log('Success sound not available');
-    }
-}
-
-
-// Show success notification for login
-export function showLoginSuccessNotification(user) {
-    initNotificationContainer();
-    
-    const displayName = user.displayName || user.email?.split('@')[0] || 'משתמש';
-    const userEmail = user.email || '';
-    const userPhoto = user.photoURL;
-    
-    // Create confetti effect
-    createConfettiEffect();
-    
-    // Play success sound (optional)
-    playSuccessSound();
-    
-    const notification = document.createElement('div');
-    notification.className = 'success-notification';
-    notification.style.pointerEvents = 'auto';
-    
-    const photoHtml = userPhoto ? '<img src="' + userPhoto + '" alt="User Avatar" class="notification-avatar">' : '';
-    
-    notification.innerHTML = 
-        '<button class="notification-close" onclick="this.parentElement.remove()">' +
-            '<i class="fas fa-times"></i>' +
-        '</button>' +
-        
-        '<div class="notification-header">' +
-            '<div class="notification-icon">' +
-                '<i class="fas fa-check"></i>' +
-            '</div>' +
-            photoHtml +
-            '<div class="notification-content">' +
-                '<h3>ברוך הבא, ' + displayName + '! 🎉</h3>' +
-                '<p>התחברת בהצלחה למערכת עיצוב החולצות</p>' +
-            '</div>' +
-        '</div>' +
-        
-        '<div class="notification-actions">' +
-            '<button class="notification-btn primary" onclick="startDesigning()">' +
-                '<i class="fas fa-magic"></i> התחל לעצב עכשיו' +
-            '</button>' +
-            '<button class="notification-btn" onclick="this.parentElement.parentElement.remove()">' +
-                '<i class="fas fa-eye"></i> סגור' +
-            '</button>' +
-        '</div>';
-    
-    notificationContainer.appendChild(notification);
-    
-    // Trigger animation
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    // Auto remove after 10 seconds (longer for better UX)
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.classList.add('hide');
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 400);
-        }
-    }, 10000);
-    
-    return notification;
-}
-
-// Show general success notification
-export function showSuccessNotification(title, message, actions = []) {
-    initNotificationContainer();
-    
-    const notification = document.createElement('div');
-    notification.className = 'success-notification';
-    notification.style.pointerEvents = 'auto';
-    
-    let actionsHtml = '';
-    if (actions.length > 0) {
-        actionsHtml = '<div class="notification-actions">';
-        actions.forEach(action => {
-            actionsHtml += '<button class="notification-btn ' + (action.primary ? 'primary' : '') + '" onclick="' + action.onclick + '">';
-            actionsHtml += (action.icon ? '<i class="' + action.icon + '"></i>' : '') + ' ' + action.text;
-            actionsHtml += '</button>';
-        });
-        actionsHtml += '</div>';
-    }
-    
-    notification.innerHTML = 
-        '<button class="notification-close" onclick="this.parentElement.remove()">' +
-            '<i class="fas fa-times"></i>' +
-        '</button>' +
-        
-        '<div class="notification-header">' +
-            '<div class="notification-icon">' +
-                '<i class="fas fa-check"></i>' +
-            '</div>' +
-            '<div class="notification-content">' +
-                '<h3>' + title + '</h3>' +
-                '<p>' + message + '</p>' +
-            '</div>' +
-        '</div>' +
-        
-        actionsHtml;
-    
-    notificationContainer.appendChild(notification);
-    
-    // Trigger animation
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    // Auto remove after 6 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.classList.add('hide');
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 400);
-        }
-    }, 6000);
-    
-    return notification;
-}
-
-// Show error notification
-export function showErrorNotification(title, message) {
-    initNotificationContainer();
-    
-    const notification = document.createElement('div');
-    notification.className = 'success-notification';
-    notification.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
-    notification.style.pointerEvents = 'auto';
-    
-    notification.innerHTML = 
-        '<button class="notification-close" onclick="this.parentElement.remove()">' +
-            '<i class="fas fa-times"></i>' +
-        '</button>' +
-        
-        '<div class="notification-header">' +
-            '<div class="notification-icon">' +
-                '<i class="fas fa-exclamation-triangle"></i>' +
-            '</div>' +
-            '<div class="notification-content">' +
-                '<h3>' + title + '</h3>' +
-                '<p>' + message + '</p>' +
-            '</div>' +
-        '</div>' +
-        
-        '<div class="notification-actions">' +
-            '<button class="notification-btn" onclick="this.parentElement.parentElement.remove()">' +
-                '<i class="fas fa-times"></i> סגור' +
-            '</button>' +
-        '</div>';
-    
-    notificationContainer.appendChild(notification);
-    
-    // Trigger animation
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.classList.add('hide');
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 400);
-        }
-    }, 5000);
-    
-    return notification;
-}
-
-// Show warning notification (for validation errors)
-export function showWarningNotification(message) {
-    initNotificationContainer();
-    
-    const notification = document.createElement('div');
-    notification.className = 'success-notification';
-    notification.style.background = 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)';
-    notification.style.pointerEvents = 'auto';
-    
-    notification.innerHTML = 
-        '<button class="notification-close" onclick="this.parentElement.remove()">' +
-            '<i class="fas fa-times"></i>' +
-        '</button>' +
-        
-        '<div class="notification-header">' +
-            '<div class="notification-icon">' +
-                '<i class="fas fa-exclamation-circle"></i>' +
-            '</div>' +
-            '<div class="notification-content">' +
-                '<h3>שים לב</h3>' +
-                '<p>' + message + '</p>' +
-            '</div>' +
-        '</div>';
-    
-    notificationContainer.appendChild(notification);
-    
-    // Trigger animation
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    // Auto remove after 4 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.classList.add('hide');
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 400);
-        }
-    }, 4000);
-    
-    return notification;
-}
-
-// Show simple success notification
-export function showSimpleSuccessNotification(message) {
-    initNotificationContainer();
-    
-    const notification = document.createElement('div');
-    notification.className = 'success-notification';
-    notification.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
-    notification.style.pointerEvents = 'auto';
-    
-    notification.innerHTML = 
-        '<button class="notification-close" onclick="this.parentElement.remove()">' +
-            '<i class="fas fa-times"></i>' +
-        '</button>' +
-        
-        '<div class="notification-header">' +
-            '<div class="notification-icon">' +
-                '<i class="fas fa-check-circle"></i>' +
-            '</div>' +
-            '<div class="notification-content">' +
-                '<h3>מעולה!</h3>' +
-                '<p>' + message + '</p>' +
-            '</div>' +
-        '</div>';
-    
-    notificationContainer.appendChild(notification);
-    
-    // Trigger animation
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.classList.add('hide');
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 400);
-        }
-    }, 3000);
-    
-    return notification;
-}
-
-// Show info notification (blue)
-export function showInfoNotification(title, message) {
-    initNotificationContainer();
-    
-    const notification = document.createElement('div');
-    notification.className = 'success-notification';
-    notification.style.background = 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)';
-    notification.style.pointerEvents = 'auto';
-    
-    notification.innerHTML = 
-        '<button class="notification-close" onclick="this.parentElement.remove()">' +
-            '<i class="fas fa-times"></i>' +
-        '</button>' +
-        
-        '<div class="notification-header">' +
-            '<div class="notification-icon">' +
-                '<i class="fas fa-info-circle"></i>' +
-            '</div>' +
-            '<div class="notification-content">' +
-                '<h3>' + title + '</h3>' +
-                '<p>' + message + '</p>' +
-            '</div>' +
-        '</div>';
-    
-    notificationContainer.appendChild(notification);
-    
-    // Trigger animation
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    // Auto remove after 4 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.classList.add('hide');
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 400);
-        }
-    }, 4000);
-    
-    return notification;
-}
-
-// Helper function for "start designing" button
-window.startDesigning = function() {
-    // Remove notification
-    const notification = document.querySelector('.success-notification');
-    if (notification) {
-        notification.remove();
-    }
-    
-    // If we're not on the order page, navigate there
-    if (!window.location.pathname.includes('/order') && !window.location.pathname.includes('order-form.html')) {
-        window.location.href = '/order';
-    } else {
-        // If already on order page, scroll to form and highlight first step
-        const firstStep = document.getElementById('step1');
-        if (firstStep) {
-            firstStep.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Add a gentle highlight effect
-            firstStep.style.animation = 'pulse 2s ease-in-out';
-            setTimeout(() => {
-                firstStep.style.animation = '';
-            }, 2000);
-        }
-    }
-};
-
-// Add pulse animation to CSS dynamically
-const style = document.createElement('style');
-style.textContent = 
-    '@keyframes pulse {' +
-        '0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }' +
-        '50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(102, 126, 234, 0.1); }' +
-        '100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }' +
-    '}';
-document.head.appendChild(style);

@@ -124,6 +124,9 @@
     
     // Initialize back text functionality
     initBackText();
+    
+    // Initialize user menu with usage tracking
+    initUserMenuTracking();
 
     // Front design method handlers
     frontDesignMethods.forEach(method => {
@@ -637,6 +640,16 @@
         } finally {
             // Show the generate button again after error or success
             event.target.style.display = 'block';
+        }
+    }
+    
+    // Initialize user menu tracking
+    async function initUserMenuTracking() {
+        try {
+            const { initUserMenu } = await import('./user-menu.js');
+            initUserMenu();
+        } catch (error) {
+            console.error('Error initializing user menu tracking:', error);
         }
     }
 })();

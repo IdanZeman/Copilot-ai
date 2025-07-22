@@ -364,6 +364,17 @@ function setupModalEvents(modal) {
                         showLoginSuccessNotification(result.user);
                     }, 200);
                     
+                    // Update usage badge after successful login
+                    setTimeout(async () => {
+                        if (window.updateUsageBadge) {
+                            try {
+                                await window.updateUsageBadge();
+                            } catch (error) {
+                                console.error('Error updating usage badge after login:', error);
+                            }
+                        }
+                    }, 500);
+                    
                 } else {
                     // Show error message
                     if (result.code === 'auth/popup-blocked') {
