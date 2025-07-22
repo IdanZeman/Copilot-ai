@@ -1,6 +1,6 @@
 // Import auth-related functionality
 import { setupAuthLinks, requireAuthentication, isUserLoggedIn, getCurrentUser } from './auth-ui.js';
-import { showWarningNotification, showErrorNotification, showSimpleSuccessNotification } from './notifications.js';
+import { showWarningNotification, showErrorNotification, showSimpleSuccessNotification, showInfoNotification } from './notifications.js';
 
 // Global variables
 let currentStep = 1;
@@ -70,6 +70,16 @@ function showStep(step) {
         currentStepElement.style.display = 'block';
         currentStepElement.classList.add('active');
         
+        // Show info notification for step 2 about AI design generation
+        if (step === 2) {
+            setTimeout(() => {
+                showInfoNotification(
+                    'כיצד זה עובד?', 
+                    'לאחר שתלחץ על "צור עיצוב עכשיו", הבינה המלאכותית תיצור עיצוב מותאם אישית בהתבסס על התיאור שכתבת. התהליך לוקח כמה שניות.'
+                );
+            }, 3000);
+        }
+        
         // Special handling for step 3 - auto-generate back design
         if (step === 3) {
             const designContainer = document.getElementById('designContainer');
@@ -122,6 +132,17 @@ function updateNavigationButtons() {
         
         // Submit button visibility
         submitBtn.style.display = currentStep === totalSteps ? 'block' : 'none';
+        
+        // Update next button text based on current step
+        if (currentStep === 2) {
+            // Step 2: Description step - change to "Create Design"
+            nextBtn.innerHTML = '<i class="fas fa-palette"></i> צור עיצוב עכשיו <i class="fas fa-arrow-left"></i>';
+            nextBtn.title = 'לחץ כדי ליצור עיצוב בינה מלאכותית בהתבסס על התיאור שלך';
+        } else {
+            // All other steps - keep default text
+            nextBtn.innerHTML = 'המשך לשלב הבא <i class="fas fa-arrow-left"></i>';
+            nextBtn.title = 'המשך לשלב הבא בתהליך עיצוב החולצה';
+        }
     }
 }
 

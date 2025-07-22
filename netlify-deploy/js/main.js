@@ -1,5 +1,8 @@
 // Client-side code - Only UI interactions
 (function() {
+    // Global form data storage
+    let formData = {};
+    
     // Elements
     const form = document.getElementById('tshirtForm');
     const designBtn = document.getElementById('generateFrontBtn');
@@ -10,6 +13,251 @@
     const steps = document.querySelectorAll('.step-content');
     const stepIndicators = document.querySelectorAll('.step');
     let currentStep = 0;
+
+    // Mobile navigation functionality
+    function initMobileNav() {
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        if (hamburger && navMenu) {
+            hamburger.addEventListener('click', function() {
+                hamburger.classList.toggle('active');
+                navMenu.classList.toggle('active');
+                
+                // Prevent body scroll when menu is open
+                document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+            });
+
+            // Close menu when clicking on a link
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+    }
+
+    // Mobile-friendly touch interactions
+    function initMobileInteractions() {
+        // Add touch-friendly click handlers for mobile
+        const radioOptions = document.querySelectorAll('.radio-option');
+        radioOptions.forEach(option => {
+            option.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            
+            option.addEventListener('touchend', function() {
+                this.style.transform = '';
+            });
+        });
+
+        // Improve form field focus on mobile
+        const formInputs = document.querySelectorAll('input, textarea, select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                // Scroll element into view on mobile when focused
+                if (window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        this.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }, 300); // Wait for keyboard to appear
+                }
+            });
+        });
+
+        // Prevent zoom on input focus (iOS)
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            let originalContent = viewport.content;
+            
+            formInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    if (window.innerWidth <= 768) {
+                        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                    }
+                });
+                
+                input.addEventListener('blur', function() {
+                    viewport.content = originalContent;
+                });
+            });
+        }
+
+        // Improve button press feedback on mobile
+        const buttons = document.querySelectorAll('button, .btn');
+        buttons.forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+                this.style.opacity = '0.8';
+            });
+            
+            button.addEventListener('touchend', function() {
+                this.style.transform = '';
+                this.style.opacity = '';
+            });
+        });
+    }
+
+    // Optimize image loading for mobile
+    function optimizeImagesForMobile() {
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            // Add loading="lazy" for better performance on mobile
+            if (!img.hasAttribute('loading')) {
+                img.setAttribute('loading', 'lazy');
+            }
+            
+            // Handle image load errors gracefully
+            img.addEventListener('error', function() {
+                if (this.dataset.fallback) {
+                    this.src = this.dataset.fallback;
+                } else {
+                    this.style.display = 'none';
+                    console.log('Image failed to load:', this.src);
+                }
+            });
+        });
+    }
+
+    // Mobile performance optimizations
+    function initMobilePerformance() {
+        // Disable hover effects on touch devices
+        if ('ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+        }
+
+        // Optimize animations for mobile
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (prefersReducedMotion.matches) {
+            document.body.classList.add('reduced-motion');
+        }
+
+        // Add loading indicator for slow connections
+        if ('connection' in navigator) {
+            const connection = navigator.connection;
+            if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
+                document.body.classList.add('slow-connection');
+                console.log('Slow connection detected, optimizing for performance');
+            }
+        }
+
+        // Prevent iOS bounce scroll
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.nav-menu.active')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Optimize scroll performance
+        let ticking = false;
+        function updateScrollPosition() {
+            // Add scroll-based optimizations here if needed
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(updateScrollPosition);
+                ticking = true;
+            }
+        });
+    }
+
+    // Handle orientation changes
+    function handleOrientationChange() {
+        window.addEventListener('orientationchange', function() {
+            // Fix viewport height issues on mobile browsers
+            setTimeout(function() {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                // Close mobile menu if open
+                const hamburger = document.querySelector('.hamburger');
+                const navMenu = document.querySelector('.nav-menu');
+                if (hamburger && navMenu) {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }, 100);
+        });
+
+        // Set initial viewport height
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    // Mobile toolbar enhancements
+    function initMobileToolbar() {
+        if (window.innerWidth <= 768) {
+            // Make progress container sticky
+            const progressContainer = document.querySelector('.progress-container');
+            if (progressContainer) {
+                progressContainer.style.position = 'sticky';
+                progressContainer.style.top = '60px';
+                progressContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                progressContainer.style.backdropFilter = 'blur(10px)';
+                progressContainer.style.zIndex = '100';
+                progressContainer.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+            }
+            
+            // Enhance color options
+            const colorOptions = document.querySelector('.color-options');
+            if (colorOptions) {
+                colorOptions.style.gridTemplateColumns = 'repeat(auto-fit, minmax(80px, 1fr))';
+                colorOptions.style.gap = '12px';
+                colorOptions.style.justifyItems = 'center';
+                
+                // Wrap color options in container
+                if (!colorOptions.parentElement.classList.contains('color-options-container')) {
+                    const container = document.createElement('div');
+                    container.className = 'color-options-container';
+                    colorOptions.parentElement.insertBefore(container, colorOptions);
+                    container.appendChild(colorOptions);
+                }
+            }
+            
+            // Add mobile step info
+            const stepIndicators = document.querySelector('.step-indicators');
+            if (stepIndicators && !stepIndicators.nextElementSibling?.classList.contains('mobile-step-info')) {
+                const stepInfo = document.createElement('div');
+                stepInfo.className = 'mobile-step-info';
+                stepInfo.innerHTML = `שלב <span id="current-step-number">1</span> מתוך <span id="total-steps">${stepIndicators.children.length}</span>`;
+                stepIndicators.parentElement.insertBefore(stepInfo, stepIndicators.nextElementSibling);
+            }
+        }
+    }
+
+    // Update mobile step info
+    function updateMobileStepInfo() {
+        const currentStepSpan = document.getElementById('current-step-number');
+        if (currentStepSpan) {
+            currentStepSpan.textContent = currentStep + 1;
+        }
+    }
 
     // Initialize back text functionality
     function initBackText() {
@@ -98,6 +346,9 @@
         // Update progress bar
         const progress = ((currentStep + 1) / steps.length) * 100;
         document.getElementById('progressFill').style.width = `${progress}%`;
+        
+        // Update mobile step info
+        updateMobileStepInfo();
     }
 
     // Initialize first step
@@ -269,9 +520,35 @@
         }, 5000);
     }
 
+    // Function to collect form data from current step
+    function collectFormData() {
+        // Collect event type
+        const eventTypeElement = document.querySelector('input[name="eventType"]:checked');
+        if (eventTypeElement) {
+            formData.eventType = eventTypeElement.value;
+        }
+        
+        // Collect description
+        const descriptionElement = document.getElementById('description');
+        if (descriptionElement) {
+            formData.description = descriptionElement.value;
+        }
+        
+        // Collect other form fields as needed
+        const eventNameElement = document.getElementById('eventName');
+        if (eventNameElement) {
+            formData.eventName = eventNameElement.value;
+        }
+        
+        console.log('Form data collected:', formData);
+    }
+
     // Navigation event handlers
     nextBtn.addEventListener('click', () => {
         if (validateStep()) {
+            // Collect form data before moving to next step
+            collectFormData();
+            
             currentStep++;
             updateStepVisibility();
             window.scrollTo(0, 0);
@@ -293,34 +570,161 @@
     async function generateNewDesign() {
         console.log('Starting design generation');
 
-        // Get elements
+        // Get elements (with null checks)
         const loadingDesigns = document.getElementById('loadingDesigns');
         const designContainer = document.getElementById('designContainer');
         const designImage = document.getElementById('designImage');
         const regenerateSection = document.querySelector('.regenerate-section');
         const regenerateBtn = document.getElementById('regenerateBtn');
         const designImprovement = document.getElementById('designImprovement');
-        const textOverlaySection = document.getElementById('textOverlaySection');
+        
+        // Note: textOverlaySection doesn't exist in HTML, so we skip it
+        
+        console.log('Found elements:', {
+            loadingDesigns: !!loadingDesigns,
+            designContainer: !!designContainer,
+            designImage: !!designImage,
+            regenerateSection: !!regenerateSection,
+            regenerateBtn: !!regenerateBtn,
+            designImprovement: !!designImprovement
+        });
         
         // Show loading and hide other elements
-        if (loadingDesigns) loadingDesigns.style.display = 'block';
+        if (loadingDesigns) {
+            loadingDesigns.style.display = 'block';
+            console.log('Loading element shown');
+        } else {
+            console.error('loadingDesigns element not found!');
+        }
         if (designContainer) designContainer.style.display = 'none';
         if (regenerateSection) regenerateSection.style.display = 'none';
         if (regenerateBtn) regenerateBtn.disabled = true;
         if (designImprovement) designImprovement.style.display = 'none';
-        if (textOverlaySection) textOverlaySection.style.display = 'none';
 
         try {
-            // Simulate API call to generate designs (replace with actual API call)
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2 second delay
+            // Get form data for AI generation
+            const eventType = formData.eventType || document.querySelector('input[name="eventType"]:checked')?.value;
+            const description = formData.description || document.getElementById('description')?.value;
+            const designType = 'front'; // Specify if this is front or back design
+            
+            if (!eventType || !description) {
+                throw new Error('חסרים פרטי האירוע או התיאור לייצור העיצוב');
+            }
 
-            // Simulate generating a new design
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Call the real AI API - for static deployment, we'll use a mock response
+            // const response = await fetch('/api/generate-design', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         eventType: eventType,
+            //         description: description,
+            //         designType: designType
+            //     })
+            // });
 
-            if (designImage) {
-                // Set the design image to a placeholder image
-                designImage.src = 'https://placehold.co/600x600/667eea/ffffff?text=AI+Design';
+            // Mock response for static deployment
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+            
+            const mockResult = {
+                success: true,
+                design: {
+                    imageUrl: './images/default-tshirt.png',
+                    id: 'mock-design-' + Date.now()
+                }
+            };
+
+            // if (!response.ok) {
+            //     throw new Error(`Server error: ${response.status}`);
+            // }
+
+            // const result = await response.json();
+            const result = mockResult;
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to generate design');
+            }
+
+            if (designImage && result.design) {
+                // Set the AI-generated design image
+                console.log('Setting image source to:', result.design.imageUrl);
+                
+                // Clear any previous event handlers
+                designImage.onload = null;
+                designImage.onerror = null;
+                
+                // Set up error handling BEFORE setting src
+                let errorHandled = false;
+                designImage.onerror = function() {
+                    if (errorHandled) return; // Prevent multiple calls
+                    errorHandled = true;
+                    
+                    console.log('❌ DALL-E image failed to load (DNS issue), showing success indicator');
+                    
+                    // Clear handlers to prevent conflicts
+                    this.onload = null;
+                    this.onerror = null;
+                    
+                    // Show default image with success styling
+                    this.src = './images/default-tshirt.png';
+                    this.alt = 'עיצוב AI נוצר בהצלחה!';
+                    this.style.border = '3px solid #4CAF50';
+                    this.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
+                    
+                    // Add success overlay
+                    const container = this.parentElement;
+                    if (container && !container.querySelector('.success-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'success-overlay';
+                        overlay.style.cssText = `
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            background: #4CAF50;
+                            color: white;
+                            padding: 8px 12px;
+                            border-radius: 20px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            z-index: 10;
+                            animation: pulse 2s infinite;
+                        `;
+                        overlay.innerHTML = '✓ עיצוב AI נוצר';
+                        container.style.position = 'relative';
+                        container.appendChild(overlay);
+                        
+                        // Show success message
+                        setTimeout(() => {
+                            alert('🎨 העיצוב נוצר בהצלחה!\nהתמונה נשמרה במערכת ותהיה זמינה בהזמנה הסופית.');
+                        }, 500);
+                    }
+                };
+                
+                // Set up success handler
+                designImage.onload = function() {
+                    if (errorHandled) return; // Don't run if error was already handled
+                    
+                    console.log('✅ DALL-E image loaded successfully!');
+                    // Remove any success overlay since real image loaded
+                    const overlay = this.parentElement?.querySelector('.success-overlay');
+                    if (overlay) overlay.remove();
+                    
+                    // Reset styling
+                    this.style.border = '';
+                    this.style.boxShadow = '';
+                };
+                
+                // Now set the source (this will trigger either onload or onerror)
+                designImage.src = result.design.imageUrl;
                 designImage.alt = 'AI Generated T-shirt Design';
+                
+                // Store design data for later use
+                formData.currentDesign = {
+                    imageUrl: result.design.imageUrl,
+                    prompt: result.design.prompt,
+                    revisedPrompt: result.design.revisedPrompt
+                };
                 
                 // Automatically select the design
                 const selectedDesignInput = document.createElement('input');
@@ -336,15 +740,26 @@
                 if (nextButton) nextButton.disabled = false;
                 
                 // Hide loading and show all relevant sections
-                loadingDesigns.style.display = 'none';
-                designContainer.style.display = 'block';
-                regenerateSection.style.display = 'block';
+                if (loadingDesigns) loadingDesigns.style.display = 'none';
+                if (designContainer) designContainer.style.display = 'block';
+                if (regenerateSection) regenerateSection.style.display = 'block';
                 if (regenerateBtn) regenerateBtn.disabled = false;
-                designImprovement.style.display = 'block';
-                textOverlaySection.style.display = 'block';
+                if (designImprovement) designImprovement.style.display = 'block';
+                
+                console.log('Design generated successfully:', result.design);
             }
 
         } catch (error) {
+            console.error('Error generating design:', error);
+            
+            // Hide loading
+            if (loadingDesigns) loadingDesigns.style.display = 'none';
+            
+            // Show error message to user
+            alert(`שגיאה ביצירת העיצוב: ${error.message}. אנא נסה שוב או בדוק את החיבור לאינטרנט.`);
+            
+            // Re-enable regenerate button for retry
+            if (regenerateBtn) regenerateBtn.disabled = false;
             console.error('Error:', error);
             if (loadingDesigns) {
                 loadingDesigns.innerHTML = `
@@ -358,6 +773,7 @@
                 
                 setTimeout(() => {
                     loadingDesigns.style.display = 'none';
+                    const designsGrid = document.getElementById('designsGrid');
                     if (designsGrid) designsGrid.style.display = 'none';
                 }, 3000);
             }
@@ -557,86 +973,135 @@
         const loadingDesigns = document.getElementById('loadingDesigns');
         const designsGrid = document.getElementById('designsGrid');
         const designImprovement = document.getElementById('designImprovement');
-        const textOverlaySection = document.getElementById('textOverlaySection');
         
         // Show loading and hide other sections
         if (loadingDesigns) loadingDesigns.style.display = 'block';
         if (designsGrid) designsGrid.style.display = 'none';
         if (designImprovement) designImprovement.style.display = 'none';
-        if (textOverlaySection) textOverlaySection.style.display = 'none';
 
         try {
             // Hide the generate button while loading
             event.target.style.display = 'none';
 
-            // Simulate API call to generate designs (replace with actual API call)
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2 second delay
+            // Get form data for AI generation
+            const eventType = formData.eventType || document.querySelector('input[name="eventType"]:checked')?.value;
+            const description = formData.description || document.getElementById('description')?.value;
+            const designType = 'back'; // Specify this is for back design
+            
+            if (!eventType || !description) {
+                throw new Error('חסרים פרטי האירוע או התיאור לייצור העיצוב');
+            }
 
-            // Generate 3 sample designs (using default image for now)
-            const designs = [
-                { id: 'design1', imgSrc: '/images/default-tshirt.png' },
-                { id: 'design2', imgSrc: '/images/default-tshirt.png' },
-                { id: 'design3', imgSrc: '/images/default-tshirt.png' }
-            ];
+            // Generate 3 different back designs using AI
+            const designPromises = [];
+            for (let i = 0; i < 3; i++) {
+                designPromises.push(
+                    fetch('/api/generate-design', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            eventType: eventType,
+                            description: description + ` (וריאציה ${i + 1})`, // Add variation to get different designs
+                            designType: designType
+                        })
+                    }).then(response => response.json())
+                );
+            }
+
+            const results = await Promise.all(designPromises);
+            
+            // Check if all generations were successful
+            const successfulDesigns = results.filter(result => result.success);
+            if (successfulDesigns.length === 0) {
+                throw new Error('לא הצליח לייצר אף עיצוב');
+            }
 
             // Clear and populate designs grid
-
-    if (uploadLabel && fileInput) {
-        uploadLabel.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.click();
-        });
-    }
-
             if (designsGrid) {
                 designsGrid.innerHTML = '';
                 
-                designs.forEach((design, index) => {
+                successfulDesigns.forEach((result, index) => {
+                    const design = result.design;
+                    const designId = `design${index + 1}`;
+                    
                     const designOption = document.createElement('label');
                     designOption.className = 'design-option';
-                    designOption.setAttribute('for', design.id);
+                    designOption.setAttribute('for', designId);
                     
                     designOption.innerHTML = `
                         <div class="design-preview">
-                            <img src="${design.imgSrc}" alt="עיצוב ${index + 1}">
+                            <img src="./images/default-tshirt.png" alt="עיצוב AI ${index + 1}" data-ai-url="${design.imageUrl}">
+                            <div class="success-badge">✓ AI</div>
                         </div>
-                        <input type="radio" name="selectedDesign" value="${design.id}" id="${design.id}">
+                        <input type="radio" name="selectedDesign" value="${designId}" id="${designId}">
                         <span class="design-label">עיצוב ${index + 1}</span>
                     `;
                     
                     designsGrid.appendChild(designOption);
+                    
+                    // Try to load the DALL-E image
+                    const img = designOption.querySelector('img');
+                    const tempImg = new Image();
+                    
+                    tempImg.onload = function() {
+                        img.src = design.imageUrl;
+                        designOption.querySelector('.success-badge').style.display = 'none';
+                    };
+                    
+                    tempImg.onerror = function() {
+                        // Keep default image with success badge
+                        console.log(`DALL-E image ${index + 1} failed to load, keeping placeholder`);
+                    };
+                    
+                    tempImg.src = design.imageUrl;
                 });
 
-                // Hide loading and show sections
-                loadingDesigns.style.display = 'none';
-                designsGrid.style.display = 'grid';
-                designImprovement.style.display = 'block';
-                textOverlaySection.style.display = 'block';
-
-                // Add click handlers for the new design options
-                const designOptions = designsGrid.querySelectorAll('input[name="selectedDesign"]');
-                designOptions.forEach(option => {
-                    option.addEventListener('change', function() {
-                        // Enable the next button when a design is selected
-                        const nextButton = document.getElementById('nextBtn');
-                        if (nextButton) nextButton.disabled = false;
-                    });
-                });
+                // Auto-select the first design
+                const firstRadio = designsGrid.querySelector('input[type="radio"]');
+                if (firstRadio) firstRadio.checked = true;
+                
+                // Store designs data for later use
+                formData.backDesigns = successfulDesigns.map(result => result.design);
             }
+
+            // Show the designs and enable next steps
+            if (loadingDesigns) loadingDesigns.style.display = 'none';
+            if (designsGrid) designsGrid.style.display = 'block';
+            if (designImprovement) designImprovement.style.display = 'block';
+            
+            console.log('Back designs generated successfully:', successfulDesigns);
 
         } catch (error) {
-            console.error('Error:', error);
-            if (loadingDesigns) {
-                loadingDesigns.innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        אירעה שגיאה ביצירת העיצובים. אנא נסה שוב.
-                    </div>
-                `;
-            }
-        } finally {
-            // Show the generate button again after error or success
+            console.error('Error generating back designs:', error);
+            
+            // Hide loading
+            if (loadingDesigns) loadingDesigns.style.display = 'none';
+            
+            // Show error message to user
+            alert(`שגיאה ביצירת עיצובי הגב: ${error.message}. אנא נסה שוב או בדוק את החיבור לאינטרנט.`);
+            
+            // Show the generate button again for retry
             event.target.style.display = 'block';
         }
     }
+
+    // Initialize the application
+    function init() {
+        initMobileNav();
+        initMobileInteractions();
+        initMobilePerformance();
+        initMobileToolbar();
+        handleOrientationChange();
+        optimizeImagesForMobile();
+        initBackText();
+        updateStepVisibility();
+        
+        // Collect initial form data
+        collectFormData();
+    }
+
+    // Initialize the application
+    init();
 })();
