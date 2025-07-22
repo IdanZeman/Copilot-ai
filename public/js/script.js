@@ -1,6 +1,7 @@
 // Import auth-related functionality
 import { setupAuthLinks, requireAuthentication, isUserLoggedIn, getCurrentUser } from './auth-ui.js';
 import { showWarningNotification, showErrorNotification, showSimpleSuccessNotification, showInfoNotification } from './notifications.js';
+import { isDevelopmentMode, generateMockAIResponse, logAPICall, showDevNotification, initDevMode } from './dev-config.js';
 
 // Global variables
 let currentStep = 1;
@@ -229,8 +230,14 @@ function validateColorSelection() {
     const designImage = document.getElementById('designImage');
     
     // Check if a design has been generated and selected
-    if (!designContainer || designContainer.style.display === 'none' || 
-        !designImage || designImage.src.includes('default-tshirt.png')) {
+    // In development mode, default-tshirt.png is acceptable if marked as generated
+    const isDev = isDevelopmentMode();
+    const isGenerated = designImage && designImage.getAttribute('data-design-generated') === 'true';
+    const hasValidDesign = designContainer && designContainer.style.display !== 'none' && 
+                          designImage && designImage.src && 
+                          (isDev ? isGenerated : !designImage.src.includes('default-tshirt.png'));
+    
+    if (!hasValidDesign) {
         showWarningNotification('אנא צור עיצוב לחלק האחורי של החולצה');
         return false;
     }
@@ -452,8 +459,36 @@ async function generateDesign() {
             console.error('Error recording usage:', error);
         }
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Check if in development mode
+        if (isDevelopmentMode()) {
+            // Log API call in development mode
+            logAPICall('generateDesign', { prompt });
+            
+            // Use mock response instead of real AI
+            const mockResponse = generateMockAIResponse(prompt, 'design');
+            
+            // Simulate loading time
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Use mock designs
+            document.getElementById('generated-designs').innerHTML = `
+                <div class="design-option" onclick="selectDesign(this)">
+                    <img src="${mockResponse.images[0]}" alt="עיצוב AI 1">
+                    <p>עיצוב 1 (מצב פיתוח)</p>
+                </div>
+                <div class="design-option" onclick="selectDesign(this)">
+                    <img src="${mockResponse.images[1]}" alt="עיצוב AI 2">
+                    <p>עיצוב 2 (מצב פיתוח)</p>
+                </div>
+                <div class="design-option" onclick="selectDesign(this)">
+                    <img src="${mockResponse.images[2]}" alt="עיצוב AI 3">
+                    <p>עיצוב 3 (מצב פיתוח)</p>
+                </div>
+            `;
+        } else {
+            // Real AI generation would go here
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
         
         // Show generated designs
         document.getElementById('generated-designs').style.display = 'grid';
@@ -505,17 +540,40 @@ async function generateBackDesign() {
             console.error('Error recording usage:', error);
         }
         
-        // Simulate API call for design generation
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Check if in development mode
+        if (isDevelopmentMode()) {
+            // Log API call in development mode
+            logAPICall('generateBackDesign', { description });
+            
+            // Use mock response instead of real AI
+            const mockResponse = generateMockAIResponse(description, 'back_design');
+            
+            // Simulate loading time
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Show the generated design with mock data
+            const designImage = document.getElementById('designImage');
+            designImage.src = mockResponse.image;
+            designImage.alt = `${mockResponse.description} (מצב פיתוח)`;
+        } else {
+            // Real AI generation would go here
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // For demo purposes, show a placeholder design
+            const designImage = document.getElementById('designImage');
+            designImage.src = 'https://via.placeholder.com/300x300/4a90e2/ffffff?text=AI+Generated+Design';
+        }
         
         // Show the generated design
         document.getElementById('loadingDesigns').style.display = 'none';
         document.getElementById('designContainer').style.display = 'block';
         document.getElementById('backTextSection').style.display = 'block';
         
-        // For demo purposes, show a placeholder design
+        // Mark design as generated for validation
         const designImage = document.getElementById('designImage');
-        designImage.src = 'https://via.placeholder.com/300x300/4a90e2/ffffff?text=AI+Generated+Design';
+        if (designImage) {
+            designImage.setAttribute('data-design-generated', 'true');
+        }
         
         showSimpleSuccessNotification('העיצוב נוצר בהצלחה! ניתן להמשיך לשלב הבא');
         
@@ -869,7 +927,22 @@ function initForm(skipAuthCheck = false) {
 document.addEventListener('DOMContentLoaded', () => {
     initForm();
     loadAuthModals();
+    
+    // Initialize development mode
+    initDevMode();
+    
+    // Update dev mode button text on page load
+    updateDevModeButtonText();
 });
+
+// Update dev mode button text based on current state
+function updateDevModeButtonText() {
+    const devModeText = document.getElementById('dev-mode-text');
+    if (devModeText) {
+        const isDevMode = localStorage.getItem('development-mode') === 'true';
+        devModeText.textContent = isDevMode ? 'כבה מצב פיתוח' : 'הפעל מצב פיתוח';
+    }
+}
 
 // Make functions available globally for HTML onclick handlers
 window.nextStep = nextStep;
@@ -887,3 +960,25 @@ window.updateTotalQuantity = updateTotalQuantity;
 window.checkColorContrast = checkColorContrast;
 window.blockFormForGuests = blockFormForGuests;
 window.enableFormForAuthenticatedUser = enableFormForAuthenticatedUser;
+window.toggleDevMode = toggleDevMode;
+
+// Toggle development mode
+function toggleDevMode() {
+    const currentMode = localStorage.getItem('development-mode') === 'true';
+    const newMode = !currentMode;
+    
+    localStorage.setItem('development-mode', newMode.toString());
+    
+    // Update button text
+    updateDevModeButtonText();
+    
+    // Show notification
+    if (newMode) {
+        showDevNotification('מצב פיתוח הופעל - קריאות AI חסומות');
+    } else {
+        showInfoNotification('מצב פיתוח כובה - קריאות AI מופעלות');
+    }
+    
+    // Reinitialize dev mode
+    initDevMode();
+}

@@ -169,10 +169,24 @@ function addUsageStatsButton(userMenuContainer = null) {
 
     // Add the button to the user menu (before logout button)
     const logoutBtn = userMenuContainer.querySelector('.logout-link');
+    const devModeBtn = userMenuContainer.querySelector('.dev-mode-toggle');
+    
     if (logoutBtn) {
         userMenuContainer.insertBefore(usageStatsBtn, logoutBtn);
     } else {
         userMenuContainer.appendChild(usageStatsBtn);
+    }
+    
+    // Show dev mode button for authenticated users
+    if (devModeBtn) {
+        devModeBtn.style.display = 'block';
+        
+        // Update button text based on current mode
+        const devModeText = devModeBtn.querySelector('#dev-mode-text');
+        if (devModeText) {
+            const isDevMode = localStorage.getItem('development-mode') === 'true';
+            devModeText.textContent = isDevMode ? 'כבה מצב פיתוח' : 'הפעל מצב פיתוח';
+        }
     }
 
     console.log('Usage stats button added to user menu');
