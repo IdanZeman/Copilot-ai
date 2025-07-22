@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/styles-user-menu.css">
     <link rel="stylesheet" href="/css/styles-auth.css">
+    <link rel="stylesheet" href="/css/notification.css">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -20,13 +21,13 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="./index.html" class="nav-link active">בית</a>
+                    <a href="/" class="nav-link active">בית</a>
                 </li>
                 <li class="nav-item">
-                    <a href="./my-orders.html" class="nav-link">ההזמנות שלי</a>
+                    <a href="/orders" class="nav-link">ההזמנות שלי</a>
                 </li>
                 <li class="nav-item">
-                    <a href="./order-form.html" class="nav-link cta-link">התחל לעצב</a>
+                    <a href="/order" class="nav-link cta-link">התחל לעצב</a>
                 </li>
                 <li class="nav-item user-menu-item">
                     <div class="user-menu-trigger">
@@ -34,12 +35,16 @@
                         <div class="user-menu">
                             <div class="user-menu-header">
                                 <i class="fas fa-user"></i>
-                                <span>אזור אישי</span>
+                                <span>אורח</span>
                             </div>
                             <div class="user-menu-content">
                                 <a href="#" class="user-menu-link login-link">
                                     <i class="fab fa-google"></i>
                                     התחבר עם Google
+                                </a>
+                                <a href="#" class="user-menu-link logout-link" style="display: none;">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    התנתק
                                 </a>
                             </div>
                         </div>
@@ -61,7 +66,7 @@
                 <h1 class="hero-title">עיצוב חולצות מותאמות אישית<br>בעזרת <span class="highlight">בינה מלאכותית</span></h1>
                 <p class="hero-subtitle">צור עיצובים ייחודיים לכל אירוע - צבאי, משפחתי, עסקי ועוד<br>תהליך פשוט ומהיר עם תוצאות מקצועיות</p>
                 <div class="hero-buttons">
-                    <a href="./order-form.html" class="btn btn-primary btn-large">
+                    <a href="/order" class="btn btn-primary btn-large">
                         <i class="fas fa-magic"></i>
                         התחל לעצב עכשיו
                     </a>
@@ -260,7 +265,7 @@
             <div class="cta-content">
                 <h2>מוכן להתחיל?</h2>
                 <p>צור את העיצוב הייחודי שלך עכשיו ותקבל תוצאה מקצועית תוך דקות</p>
-                <a href="./order-form.html" class="btn btn-primary btn-large">
+                <a href="/order" class="btn btn-primary btn-large">
                     <i class="fas fa-rocket"></i>
                     התחל לעצב עכשיו
                 </a>
@@ -279,9 +284,9 @@
                 <div class="footer-section">
                     <h4>קישורים מהירים</h4>
                     <ul>
-                        <li><a href="./index.html">בית</a></li>
-                        <li><a href="./order-form.html">הזמן עכשיו</a></li>
-                        <li><a href="./my-orders.html">ההזמנות שלי</a></li>
+                        <li><a href="/">בית</a></li>
+                        <li><a href="/order">הזמן עכשיו</a></li>
+                        <li><a href="/orders">ההזמנות שלי</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -303,5 +308,6 @@
     
     <script type="module" src="/js/script.js"></script>
     <script type="module" src="/js/auth-ui.js"></script>
+    <script type="module" src="/js/notifications.js"></script>
 </body>
 </html>

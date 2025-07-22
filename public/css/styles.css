@@ -2987,3 +2987,649 @@ textarea.invalid {
     z-index: 10;
     animation: pulse 2s infinite;
 }
+
+/* ===========================
+   MOBILE RESPONSIVE STYLES
+   =========================== */
+
+/* General mobile adjustments */
+@media (max-width: 768px) {
+    /* Body and container adjustments */
+    body {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .container {
+        padding: 0 15px;
+        max-width: 100%;
+    }
+    
+    /* Navigation responsive */
+    .navbar {
+        padding: 10px 0;
+    }
+    
+    .nav-container {
+        padding: 0 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .nav-logo h2 {
+        font-size: 1.3rem;
+    }
+    
+    .nav-menu {
+        position: fixed;
+        top: -100%;
+        right: 0;
+        flex-direction: column;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        width: 100%;
+        height: 100vh;
+        text-align: center;
+        transition: 0.3s;
+        z-index: 1000;
+        padding-top: 80px;
+    }
+    
+    .nav-menu.active {
+        top: 0;
+    }
+    
+    .nav-item {
+        margin: 20px 0;
+    }
+    
+    .nav-link {
+        font-size: 1.2rem;
+        padding: 15px;
+        display: block;
+        color: white !important;
+    }
+    
+    .hamburger {
+        display: block;
+        cursor: pointer;
+        z-index: 1001;
+    }
+    
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+        background-color: white;
+    }
+    
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+        background-color: white;
+    }
+    
+    /* Hero section mobile */
+    .hero {
+        padding: 80px 0 40px;
+        min-height: auto;
+    }
+    
+    .hero-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+    }
+    
+    .hero-content {
+        order: 1;
+    }
+    
+    .hero-image {
+        order: 2;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+        line-height: 1.3;
+        margin-bottom: 20px;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 25px;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    .btn-large {
+        width: 100%;
+        max-width: 280px;
+        padding: 15px 20px;
+        font-size: 1rem;
+    }
+    
+    /* Features section mobile */
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .feature-card {
+        padding: 25px 20px;
+        text-align: center;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+    }
+    
+    .feature-icon i {
+        font-size: 2rem;
+    }
+    
+    .feature-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+    
+    .feature-card p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    /* Form container mobile */
+    .form-container {
+        margin: 20px auto;
+        padding: 20px;
+        max-width: 100%;
+        border-radius: 10px;
+    }
+    
+    .step-content {
+        padding: 20px;
+    }
+    
+    /* Form elements mobile */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        padding: 12px 15px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+    
+    /* Radio groups mobile */
+    .radio-group {
+        gap: 10px;
+    }
+    
+    .radio-option {
+        padding: 15px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+    }
+    
+    /* Grid layouts mobile */
+    .designs-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .design-option {
+        padding: 15px;
+        border-radius: 10px;
+    }
+    
+    .design-preview img {
+        max-width: 100%;
+        height: auto;
+        max-height: 200px;
+    }
+    
+    /* Button adjustments */
+    .btn {
+        padding: 12px 20px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+    }
+    
+    /* Progress bar mobile */
+    .progress-container {
+        margin: 20px 0;
+    }
+    
+    .step-indicators {
+        gap: 8px;
+    }
+    
+    .step {
+        width: 35px;
+        height: 35px;
+        font-size: 0.8rem;
+    }
+    
+    /* T-shirt preview mobile */
+    .tshirt-preview {
+        max-width: 250px;
+        margin: 0 auto;
+    }
+    
+    .preview-container {
+        padding: 20px;
+    }
+    
+    /* Upload section mobile */
+    .upload-area {
+        padding: 30px 20px;
+        border-radius: 10px;
+    }
+    
+    .upload-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .upload-text {
+        font-size: 1rem;
+    }
+    
+    .upload-hint {
+        font-size: 0.85rem;
+    }
+    
+    /* Archive icons mobile */
+    .archive-icons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    
+    .icon-option {
+        padding: 15px 10px;
+        border-radius: 8px;
+    }
+    
+    .icon-option i {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+    }
+    
+    .icon-option span {
+        font-size: 0.8rem;
+    }
+    
+    /* Color options mobile */
+    .color-options {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        padding: 0 10px;
+    }
+    
+    .color-option {
+        width: auto;
+        min-width: 60px;
+        padding: 10px 5px;
+    }
+    
+    .color-swatch {
+        width: 45px;
+        height: 45px;
+        margin: 0 auto 5px;
+    }
+    
+    .color-option span {
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+    
+    /* Step indicators mobile improvements */
+    .step-indicators {
+        gap: 8px;
+        padding: 0 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .step {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+        min-width: 32px;
+        flex-shrink: 0;
+    }
+    
+    /* Progress container mobile */
+    .progress-container {
+        margin: 15px 0;
+        padding: 0 15px;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        margin-bottom: 15px;
+    }
+    
+    /* Header mobile improvements */
+    .header {
+        padding: 20px 15px;
+        text-align: center;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+    }
+    
+    .header .tagline {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    /* Text overlay mobile */
+    .text-position-options {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .position-option {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    /* Loading states mobile */
+    .loading-designs {
+        padding: 30px 20px;
+        text-align: center;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 15px;
+    }
+    
+    /* Error messages mobile */
+    .error-message {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    
+    /* Success messages mobile */
+    .success-message {
+        padding: 15px;
+        font-size: 1rem;
+        border-radius: 10px;
+        text-align: center;
+    }
+}
+
+/* Small mobile devices (phones in portrait) */
+@media (max-width: 480px) {
+    /* Even smaller adjustments */
+    .hero-title {
+        font-size: 1.7rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .btn-large {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .form-container {
+        margin: 10px;
+        padding: 15px;
+    }
+    
+    .step-content {
+        padding: 15px;
+    }
+    
+    .archive-icons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .color-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 0 5px;
+    }
+    
+    .color-option {
+        padding: 8px 3px;
+    }
+    
+    .color-swatch {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .color-option span {
+        font-size: 0.7rem;
+    }
+    
+    /* Step indicators for very small screens */
+    .step-indicators {
+        gap: 5px;
+        padding: 0 5px;
+    }
+    
+    .step {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    /* Smaller form elements */
+    .form-container {
+        margin: 5px;
+        padding: 10px;
+    }
+    
+    .header {
+        padding: 15px 10px;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .header .tagline {
+        font-size: 0.8rem;
+    }
+    
+    .radio-group {
+        gap: 8px;
+    }
+    
+    .radio-option {
+        padding: 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Landscape mobile adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        padding: 60px 0 30px;
+    }
+    
+    .hero-container {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .hero-content {
+        flex: 1;
+        text-align: right;
+    }
+    
+    .hero-image {
+        flex: 0 0 200px;
+        max-width: 200px;
+    }
+    
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: row;
+        gap: 15px;
+    }
+    
+    .btn-large {
+        width: auto;
+        max-width: none;
+    }
+}
+
+/* High DPI screen optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Optimize images for retina displays */
+    .feature-icon i,
+    .step-circle i,
+    .hero-image i {
+        transform: translateZ(0);
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    @media (max-width: 768px) {
+        /* Dark mode mobile optimizations if needed */
+        .nav-menu {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        }
+        
+        .form-container {
+            background: rgba(45, 55, 72, 0.95);
+            color: #e2e8f0;
+        }
+        
+        .feature-card,
+        .design-wrapper {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+    }
+}
+
+/* Accessibility improvements for mobile */
+@media (max-width: 768px) {
+    /* Larger touch targets */
+    .btn,
+    .radio-option,
+    .nav-link,
+    .hamburger {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Better contrast for small screens */
+    .hero-subtitle {
+        color: rgba(255, 255, 255, 0.95);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Focus indicators for keyboard navigation */
+    .btn:focus,
+    .form-control:focus,
+    .radio-option:focus {
+        outline: 3px solid #667eea;
+        outline-offset: 2px;
+    }
+}
+
+/* Touch device optimizations */
+.touch-device .feature-card:hover,
+.touch-device .btn:hover,
+.touch-device .nav-link:hover {
+    transform: none;
+}
+
+/* Reduced motion support */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+}
+
+/* Slow connection optimizations */
+.slow-connection .loading-spinner {
+    border-width: 2px;
+}
+
+.slow-connection .hero {
+    background-attachment: scroll;
+}
+
+/* Viewport height fix for mobile browsers */
+:root {
+    --vh: 1vh;
+}
+
+.hero {
+    min-height: calc(100vh);
+    min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Additional mobile-specific utility classes */
+@media (max-width: 768px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+    
+    .mobile-visible {
+        display: block !important;
+    }
+    
+    .mobile-text-center {
+        text-align: center !important;
+    }
+    
+    .mobile-full-width {
+        width: 100% !important;
+    }
+    
+    .mobile-no-margin {
+        margin: 0 !important;
+    }
+    
+    .mobile-small-padding {
+        padding: 10px !important;
+    }
+}

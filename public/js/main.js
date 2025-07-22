@@ -14,6 +14,251 @@
     const stepIndicators = document.querySelectorAll('.step');
     let currentStep = 0;
 
+    // Mobile navigation functionality
+    function initMobileNav() {
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        if (hamburger && navMenu) {
+            hamburger.addEventListener('click', function() {
+                hamburger.classList.toggle('active');
+                navMenu.classList.toggle('active');
+                
+                // Prevent body scroll when menu is open
+                document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+            });
+
+            // Close menu when clicking on a link
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+    }
+
+    // Mobile-friendly touch interactions
+    function initMobileInteractions() {
+        // Add touch-friendly click handlers for mobile
+        const radioOptions = document.querySelectorAll('.radio-option');
+        radioOptions.forEach(option => {
+            option.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            
+            option.addEventListener('touchend', function() {
+                this.style.transform = '';
+            });
+        });
+
+        // Improve form field focus on mobile
+        const formInputs = document.querySelectorAll('input, textarea, select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                // Scroll element into view on mobile when focused
+                if (window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        this.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }, 300); // Wait for keyboard to appear
+                }
+            });
+        });
+
+        // Prevent zoom on input focus (iOS)
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            let originalContent = viewport.content;
+            
+            formInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    if (window.innerWidth <= 768) {
+                        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                    }
+                });
+                
+                input.addEventListener('blur', function() {
+                    viewport.content = originalContent;
+                });
+            });
+        }
+
+        // Improve button press feedback on mobile
+        const buttons = document.querySelectorAll('button, .btn');
+        buttons.forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+                this.style.opacity = '0.8';
+            });
+            
+            button.addEventListener('touchend', function() {
+                this.style.transform = '';
+                this.style.opacity = '';
+            });
+        });
+    }
+
+    // Optimize image loading for mobile
+    function optimizeImagesForMobile() {
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            // Add loading="lazy" for better performance on mobile
+            if (!img.hasAttribute('loading')) {
+                img.setAttribute('loading', 'lazy');
+            }
+            
+            // Handle image load errors gracefully
+            img.addEventListener('error', function() {
+                if (this.dataset.fallback) {
+                    this.src = this.dataset.fallback;
+                } else {
+                    this.style.display = 'none';
+                    console.log('Image failed to load:', this.src);
+                }
+            });
+        });
+    }
+
+    // Mobile performance optimizations
+    function initMobilePerformance() {
+        // Disable hover effects on touch devices
+        if ('ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+        }
+
+        // Optimize animations for mobile
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (prefersReducedMotion.matches) {
+            document.body.classList.add('reduced-motion');
+        }
+
+        // Add loading indicator for slow connections
+        if ('connection' in navigator) {
+            const connection = navigator.connection;
+            if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
+                document.body.classList.add('slow-connection');
+                console.log('Slow connection detected, optimizing for performance');
+            }
+        }
+
+        // Prevent iOS bounce scroll
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.nav-menu.active')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Optimize scroll performance
+        let ticking = false;
+        function updateScrollPosition() {
+            // Add scroll-based optimizations here if needed
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(updateScrollPosition);
+                ticking = true;
+            }
+        });
+    }
+
+    // Handle orientation changes
+    function handleOrientationChange() {
+        window.addEventListener('orientationchange', function() {
+            // Fix viewport height issues on mobile browsers
+            setTimeout(function() {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                // Close mobile menu if open
+                const hamburger = document.querySelector('.hamburger');
+                const navMenu = document.querySelector('.nav-menu');
+                if (hamburger && navMenu) {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }, 100);
+        });
+
+        // Set initial viewport height
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    // Mobile toolbar enhancements
+    function initMobileToolbar() {
+        if (window.innerWidth <= 768) {
+            // Make progress container sticky
+            const progressContainer = document.querySelector('.progress-container');
+            if (progressContainer) {
+                progressContainer.style.position = 'sticky';
+                progressContainer.style.top = '60px';
+                progressContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                progressContainer.style.backdropFilter = 'blur(10px)';
+                progressContainer.style.zIndex = '100';
+                progressContainer.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+            }
+            
+            // Enhance color options
+            const colorOptions = document.querySelector('.color-options');
+            if (colorOptions) {
+                colorOptions.style.gridTemplateColumns = 'repeat(auto-fit, minmax(80px, 1fr))';
+                colorOptions.style.gap = '12px';
+                colorOptions.style.justifyItems = 'center';
+                
+                // Wrap color options in container
+                if (!colorOptions.parentElement.classList.contains('color-options-container')) {
+                    const container = document.createElement('div');
+                    container.className = 'color-options-container';
+                    colorOptions.parentElement.insertBefore(container, colorOptions);
+                    container.appendChild(colorOptions);
+                }
+            }
+            
+            // Add mobile step info
+            const stepIndicators = document.querySelector('.step-indicators');
+            if (stepIndicators && !stepIndicators.nextElementSibling?.classList.contains('mobile-step-info')) {
+                const stepInfo = document.createElement('div');
+                stepInfo.className = 'mobile-step-info';
+                stepInfo.innerHTML = `שלב <span id="current-step-number">1</span> מתוך <span id="total-steps">${stepIndicators.children.length}</span>`;
+                stepIndicators.parentElement.insertBefore(stepInfo, stepIndicators.nextElementSibling);
+            }
+        }
+    }
+
+    // Update mobile step info
+    function updateMobileStepInfo() {
+        const currentStepSpan = document.getElementById('current-step-number');
+        if (currentStepSpan) {
+            currentStepSpan.textContent = currentStep + 1;
+        }
+    }
+
     // Initialize back text functionality
     function initBackText() {
         const backTextSection = document.getElementById('backTextSection');
@@ -101,6 +346,9 @@
         // Update progress bar
         const progress = ((currentStep + 1) / steps.length) * 100;
         document.getElementById('progressFill').style.width = `${progress}%`;
+        
+        // Update mobile step info
+        updateMobileStepInfo();
     }
 
     // Initialize first step
@@ -407,7 +655,7 @@
                     this.onerror = null;
                     
                     // Show default image with success styling
-                    this.src = '../images/default-tshirt.png';
+                    this.src = '/public/images/default-tshirt.png';
                     this.alt = 'עיצוב AI נוצר בהצלחה!';
                     this.style.border = '3px solid #4CAF50';
                     this.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
@@ -771,7 +1019,7 @@
                     
                     designOption.innerHTML = `
                         <div class="design-preview">
-                            <img src="../images/default-tshirt.png" alt="עיצוב AI ${index + 1}" data-ai-url="${design.imageUrl}">
+                            <img src="/public/images/default-tshirt.png" alt="עיצוב AI ${index + 1}" data-ai-url="${design.imageUrl}">
                             <div class="success-badge">✓ AI</div>
                         </div>
                         <input type="radio" name="selectedDesign" value="${designId}" id="${designId}">
@@ -828,6 +1076,12 @@
 
     // Initialize the application
     function init() {
+        initMobileNav();
+        initMobileInteractions();
+        initMobilePerformance();
+        initMobileToolbar();
+        handleOrientationChange();
+        optimizeImagesForMobile();
         initBackText();
         updateStepVisibility();
         

@@ -2,7 +2,7 @@
   "name": "copilot-ai",
   "version": "1.0.0",
   "description": "> מעצב חולצות בהתאמה אישית בעזרת בינה מלאכותית עם תמיכה מלאה בעברית",
-  "main": "ai-prompt-generator.js",
+  "main": "src/server/index.js",
   "scripts": {
     "start": "node src/server/index.js",
     "dev": "nodemon src/server/index.js",

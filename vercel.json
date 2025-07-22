@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/server/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/src/server/index.js"
+    },
+    {
+      "src": "/",
+      "dest": "/public/html/index.html"
+    },
+    {
+      "src": "/order",
+      "dest": "/public/html/order-form.html"
+    },
+    {
+      "src": "/my-orders",
+      "dest": "/public/html/my-orders.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ],
+  "env": {
+    "OPENAI_API_KEY": "@openai_api_key"
+  }
+}
