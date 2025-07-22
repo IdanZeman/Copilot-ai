@@ -708,6 +708,12 @@ async function generateBackDesign() {
         document.getElementById('designContainer').style.display = 'block';
         document.getElementById('backTextSection').style.display = 'block';
         
+        // Show design improvement section
+        const designImprovement = document.getElementById('designImprovement');
+        if (designImprovement) {
+            designImprovement.style.display = 'block';
+        }
+        
         // Update back preview
         const backPreview = document.getElementById('backPreview');
         const backPreviewImage = document.getElementById('backPreviewImage');
@@ -746,6 +752,121 @@ function updateCharCount(textarea) {
     const currentLength = textarea.value.length;
     const counter = document.querySelector('.char-counter');
     counter.textContent = `${currentLength}/${maxLength}`;
+}
+
+// Improve existing design
+async function improveDesign() {
+    // Check if development mode is enabled - skip AI calls
+    if (isDevelopmentMode()) {
+        showDevNotification('מצב פיתוח פעיל - שיפור עיצוב אינו זמין במצב זה');
+        return;
+    }
+    
+    // Check if a design exists
+    const designImage = document.getElementById('designImage');
+    if (!designImage || !designImage.src || designImage.src.includes('placeholder')) {
+        showErrorNotification('שגיאה', 'יש ליצור עיצוב לפני שליפור');
+        return;
+    }
+    
+    // Get improvement prompt
+    const improvementPrompt = document.getElementById('improvementPrompt');
+    if (!improvementPrompt || !improvementPrompt.value.trim()) {
+        showErrorNotification('שגיאה', 'אנא הזן הנחיות לשיפור העיצוב');
+        return;
+    }
+    
+    try {
+        // Check usage limits
+        if (window.UsageTracker) {
+            const canGenerate = await window.UsageTracker.checkUsageLimit();
+            if (!canGenerate) {
+                return; // Error already shown by checkUsageLimit
+            }
+        }
+        
+        // Show loading
+        const improveBtn = document.getElementById('improveDesignBtn');
+        const originalText = improveBtn.textContent;
+        improveBtn.disabled = true;
+        improveBtn.textContent = 'משפר עיצוב...';
+        
+        // Get original design details
+        const designPrompt = document.getElementById('designPrompt').value;
+        const designColor = document.querySelector('input[name="designColor"]:checked').value;
+        const designStyle = document.querySelector('input[name="designStyle"]:checked').value;
+        const shirtColor = document.querySelector('input[name="shirtColor"]:checked').value;
+        
+        // Prepare improvement request
+        const improvedPrompt = `שפר את העיצוב הבא:
+        עיצוב מקורי: ${designPrompt}
+        צבע עיצוב: ${designColor}
+        סגנון עיצוב: ${designStyle}
+        צבע חולצה: ${shirtColor}
+        
+        הנחיות לשיפור: ${improvementPrompt.value.trim()}
+        
+        אנא צור עיצוב משופר שלוקח בחשבון את ההנחיות לשיפור תוך שמירה על האלמנטים החיוביים של העיצוב המקורי.`;
+        
+        // Make API call
+        const response = await fetch('/.netlify/functions/generate-design', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: improvedPrompt,
+                color: designColor,
+                style: designStyle,
+                shirtColor: shirtColor
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.imageUrl) {
+            // Update the design image with improved version
+            designImage.src = data.imageUrl;
+            designImage.setAttribute('data-design-generated', 'true');
+            
+            // Update back preview if exists
+            const backPreviewImage = document.getElementById('backPreviewImage');
+            if (backPreviewImage) {
+                backPreviewImage.src = data.imageUrl;
+            }
+            
+            // Record usage
+            if (window.UsageTracker) {
+                await window.UsageTracker.recordUsage();
+            }
+            
+            // Clear improvement prompt
+            improvementPrompt.value = '';
+            
+            // Update usage badge
+            if (window.updateUsageBadge) {
+                window.updateUsageBadge();
+            }
+            
+            showSimpleSuccessNotification('העיצוב שופר בהצלחה!');
+            
+        } else {
+            throw new Error(data.error || 'Failed to improve design');
+        }
+        
+    } catch (error) {
+        console.error('Error improving design:', error);
+        showErrorNotification('שגיאה', 'אירעה שגיאה בשיפור העיצוב. אנא נסה שוב מאוחר יותר.');
+    } finally {
+        // Restore button
+        const improveBtn = document.getElementById('improveDesignBtn');
+        improveBtn.disabled = false;
+        improveBtn.textContent = originalText;
+    }
 }
 
 // Update total quantity
@@ -1092,6 +1213,18 @@ function initForm(skipAuthCheck = false) {
         });
     }
     
+    // Improvement prompt character counter
+    const improvementPrompt = document.getElementById('improvementPrompt');
+    if (improvementPrompt) {
+        improvementPrompt.addEventListener('input', () => {
+            const count = improvementPrompt.value.length;
+            const improvementCount = document.getElementById('improvementCount');
+            if (improvementCount) {
+                improvementCount.textContent = count;
+            }
+        });
+    }
+    
     // Quantity inputs for total calculation
     const quantityInputs = document.querySelectorAll('.quantity-input');
     quantityInputs.forEach(input => {
@@ -1102,6 +1235,12 @@ function initForm(skipAuthCheck = false) {
     document.querySelectorAll('input[name="shirtColor"], input[name="designColor"]').forEach(input => {
         input.addEventListener('change', checkColorContrast);
     });
+    
+    // Improve design button
+    const improveDesignBtn = document.getElementById('improveDesignBtn');
+    if (improveDesignBtn) {
+        improveDesignBtn.addEventListener('click', improveDesign);
+    }
     
     // Front text position handling
     document.querySelectorAll('input[name="frontTextPosition"]').forEach(input => {
@@ -1152,6 +1291,7 @@ window.prevStep = prevStep;
 window.submitForm = submitForm;
 window.generateDesign = generateDesign;
 window.generateBackDesign = generateBackDesign;
+window.improveDesign = improveDesign;
 window.handleFileUpload = handleFileUpload;
 window.removeUploadedFile = removeUploadedFile;
 window.toggleSizeChart = toggleSizeChart;
