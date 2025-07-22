@@ -260,23 +260,30 @@ function validateColorSelection() {
 
 function validateQuantity() {
     // Step 4: Front design validation
-    const frontOption = document.querySelector('input[name="frontOption"]:checked');
-    if (!frontOption) {
+    const frontDesignMethod = document.querySelector('input[name="frontDesignMethod"]:checked');
+    if (!frontDesignMethod) {
         showWarningNotification('אנא בחר אפשרות עיצוב לחלק הקדמי');
         return false;
     }
     
-    // Validate based on selected option
-    if (frontOption.value === 'upload') {
-        const uploadInput = document.getElementById('frontUpload');
-        if (!uploadInput.files || uploadInput.files.length === 0) {
+    // Validate based on selected method
+    if (frontDesignMethod.value === 'upload') {
+        const uploadInput = document.getElementById('frontImageUpload');
+        if (!uploadInput || !uploadInput.files || uploadInput.files.length === 0) {
             showWarningNotification('אנא העלה תמונה לחלק הקדמי');
             return false;
         }
-    } else if (frontOption.value === 'ai') {
-        const aiFrontDesign = document.querySelector('input[name="aiFrontDesign"]:checked');
-        if (!aiFrontDesign) {
-            showWarningNotification('אנא בחר אחד מהעיצובים שנוצרו על ידי AI');
+    } else if (frontDesignMethod.value === 'ai') {
+        const selectedDesign = document.querySelector('.design-option.selected');
+        const generatedDesigns = document.getElementById('generated-designs');
+        if (!selectedDesign || !generatedDesigns || generatedDesigns.style.display === 'none') {
+            showWarningNotification('אנא צור ובחר עיצוב AI לחלק הקדמי');
+            return false;
+        }
+    } else if (frontDesignMethod.value === 'archive') {
+        const selectedSymbol = document.querySelector('input[name="frontIcon"]:checked');
+        if (!selectedSymbol) {
+            showWarningNotification('אנא בחר סמל מהארכיון');
             return false;
         }
     }
@@ -293,7 +300,7 @@ function validateQuantity() {
         formData.frontTextPosition = frontTextPosition.value;
     }
     
-    formData.frontOption = frontOption.value;
+    formData.frontDesignMethod = frontDesignMethod.value;
     return true;
 }
 
@@ -377,14 +384,72 @@ function validatePhone(phone) {
 
 // Design method selection
 function showDesignMethod(method) {
+    console.log('showDesignMethod called with:', method);
+    
     // Hide all method contents
-    document.querySelectorAll('.method-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.front-method-content').forEach(el => {
+        el.style.display = 'none';
+        console.log('Hiding element:', el.id);
+    });
     
     // Show selected method content
-    const selectedContent = document.querySelector(`.${method}-method-content`);
+    let selectedContent;
+    if (method === 'upload') {
+        selectedContent = document.getElementById('uploadContent');
+    } else if (method === 'archive') {
+        selectedContent = document.getElementById('archiveContent');
+    } else if (method === 'ai') {
+        selectedContent = document.getElementById('aiContent');
+    }
+    
     if (selectedContent) {
         selectedContent.style.display = 'block';
+        console.log('Showing element:', selectedContent.id);
+        
+        // Show front text section when a design method is selected
+        const frontTextSection = document.getElementById('frontTextSection');
+        if (frontTextSection) {
+            frontTextSection.style.display = 'block';
+            console.log('Front text section shown');
+        }
+    } else {
+        console.log('No element found for method:', method);
     }
+}
+
+// Update front design preview
+function updateFrontPreview() {
+    const frontPreview = document.getElementById('frontPreview');
+    const previewIcon = document.getElementById('previewIcon');
+    if (!frontPreview || !previewIcon) return;
+    
+    // Get selected design method
+    const frontDesignMethod = document.querySelector('input[name="frontDesignMethod"]:checked');
+    if (!frontDesignMethod) return;
+    
+    // Update preview based on method
+    if (frontDesignMethod.value === 'archive') {
+        const selectedIcon = document.querySelector('input[name="frontIcon"]:checked');
+        if (selectedIcon) {
+            const iconClass = selectedIcon.value === 'shield' ? 'shield-alt' : 
+                            selectedIcon.value === 'heart' ? 'heart' :
+                            selectedIcon.value === 'star' ? 'star' :
+                            selectedIcon.value === 'crown' ? 'crown' :
+                            selectedIcon.value === 'mountain' ? 'mountain' :
+                            selectedIcon.value === 'fire' ? 'fire' : 'star';
+            
+            previewIcon.innerHTML = `<i class="fas fa-${iconClass}"></i>`;
+            frontPreview.style.display = 'block';
+        }
+    } else if (frontDesignMethod.value === 'ai') {
+        const selectedDesign = document.querySelector('.design-option.selected img');
+        if (selectedDesign) {
+            previewIcon.innerHTML = `<img src="${selectedDesign.src}" alt="עיצוב AI" style="width: 100%; height: 100%; object-fit: cover;">`;
+            frontPreview.style.display = 'block';
+        }
+    }
+    
+    console.log('Front preview updated');
 }
 
 // File upload handling
@@ -494,6 +559,12 @@ async function generateDesign() {
         document.getElementById('generated-designs').style.display = 'grid';
         document.querySelector('.loading-designs').style.display = 'none';
         
+        // Show front text section after generating designs
+        const frontTextSection = document.getElementById('frontTextSection');
+        if (frontTextSection) {
+            frontTextSection.style.display = 'block';
+        }
+        
         // Update usage badge
         if (window.updateUsageBadge) {
             window.updateUsageBadge();
@@ -568,6 +639,18 @@ async function generateBackDesign() {
         document.getElementById('loadingDesigns').style.display = 'none';
         document.getElementById('designContainer').style.display = 'block';
         document.getElementById('backTextSection').style.display = 'block';
+        
+        // Update back preview
+        const backPreview = document.getElementById('backPreview');
+        const backPreviewImage = document.getElementById('backPreviewImage');
+        if (backPreview && backPreviewImage) {
+            const designImage = document.getElementById('designImage');
+            if (designImage && designImage.src) {
+                backPreviewImage.src = designImage.src;
+                backPreview.style.display = 'block';
+                console.log('Back preview updated');
+            }
+        }
         
         // Mark design as generated for validation
         const designImage = document.getElementById('designImage');
@@ -814,9 +897,27 @@ function initForm(skipAuthCheck = false) {
         });
     }
     
-    // Setup event listeners
-    document.querySelectorAll('input[name="design-method"]').forEach(input => {
-        input.addEventListener('change', (e) => showDesignMethod(e.target.value));
+    // Setup event listeners for design method selection
+    document.querySelectorAll('input[name="frontDesignMethod"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+            console.log('Design method changed to:', e.target.value);
+            showDesignMethod(e.target.value);
+        });
+    });
+    
+    // Setup event listeners for icon selection
+    document.querySelectorAll('input[name="frontIcon"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+            console.log('Icon selected:', e.target.value);
+            // Show front text section when an icon is selected
+            const frontTextSection = document.getElementById('frontTextSection');
+            if (frontTextSection) {
+                frontTextSection.style.display = 'block';
+                console.log('Front text section shown after icon selection');
+            }
+            // Update front preview
+            updateFrontPreview();
+        });
     });
     
     // Event type "other" option handling
