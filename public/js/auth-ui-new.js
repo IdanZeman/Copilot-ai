@@ -288,13 +288,3 @@ export function requireAuthentication() {
 
 // Export the main functions
 export { isUserLoggedIn, getCurrentUser };
-
-// Auto-initialize auth UI when module loads
-document.addEventListener('DOMContentLoaded', async () => {
-    // Only setup if not already done by another script
-    if (!window.authUIInitialized) {
-        console.log('Auto-initializing auth UI...');
-        await setupAuthLinks();
-        window.authUIInitialized = true;
-    }
-});

@@ -4,11 +4,8 @@ import { showInfoNotification } from './notifications.js';
 
 console.log('User menu loaded successfully');
 
-// User Menu Handler
+// User Menu Handler - Close menu when clicking outside
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize user menu
-    initUserMenu();
-    
     // Close menu when clicking outside
     document.addEventListener('click', function(event) {
         const userMenu = document.querySelector('.user-menu');
@@ -55,6 +52,47 @@ export function initUserMenu() {
     
     // Update usage badge on initialization
     updateUsageBadge();
+    
+    // Add position adjustment functionality
+    adjustMenuPosition();
+}
+
+// Function to adjust menu position based on screen boundaries
+function adjustMenuPosition() {
+    const userMenuTrigger = document.querySelector('.user-menu-trigger');
+    const userMenu = document.querySelector('.user-menu');
+    
+    if (!userMenuTrigger || !userMenu) return;
+    
+    userMenuTrigger.addEventListener('mouseenter', function() {
+        // Wait for menu to appear, then adjust position
+        setTimeout(() => {
+            const menuRect = userMenu.getBoundingClientRect();
+            const triggerRect = userMenuTrigger.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            // Check if menu overflows right edge
+            if (menuRect.right > viewportWidth - 10) {
+                userMenu.style.right = '0';
+                userMenu.style.left = 'auto';
+                userMenu.style.transform = 'translateX(50px) translateY(10px)';
+            }
+            
+            // Check if menu overflows left edge on small screens
+            if (menuRect.left < 10) {
+                userMenu.style.right = 'auto';
+                userMenu.style.left = '10px';
+                userMenu.style.transform = 'translateY(10px)';
+            }
+            
+            // Check if menu overflows bottom edge
+            if (menuRect.bottom > viewportHeight - 10) {
+                userMenu.style.top = 'auto';
+                userMenu.style.bottom = 'calc(100% + 5px)';
+            }
+        }, 50);
+    });
 }
 
 // Add usage statistics button to user menu
@@ -67,14 +105,16 @@ function addUsageStatsButton(userMenuContainer = null) {
         }
     }
 
-    // Check if button already exists
-    if (document.getElementById('usage-stats-btn')) {
-        console.log('Usage stats button already exists');
+    // Check if button already exists (either created by JS or already in HTML)
+    let usageStatsBtn = document.getElementById('usage-stats-btn');
+    if (usageStatsBtn) {
+        console.log('Usage stats button already exists, setting up event handler');
+        setupUsageStatsButton(usageStatsBtn);
         return;
     }
 
-    // Create the usage stats button
-    const usageStatsBtn = document.createElement('a');
+    // Create the usage stats button if it doesn't exist
+    usageStatsBtn = document.createElement('a');
     usageStatsBtn.id = 'usage-stats-btn';
     usageStatsBtn.className = 'user-menu-link';
     usageStatsBtn.href = '#';
@@ -84,6 +124,23 @@ function addUsageStatsButton(userMenuContainer = null) {
         <span id="usage-badge" class="usage-badge">0/10</span>
     `;
 
+    // Insert before dev mode toggle if it exists, otherwise before logout button
+    const devModeToggle = userMenuContainer.querySelector('.dev-mode-toggle');
+    const logoutBtn = userMenuContainer.querySelector('.logout-link');
+    
+    if (devModeToggle) {
+        userMenuContainer.insertBefore(usageStatsBtn, devModeToggle);
+    } else if (logoutBtn) {
+        userMenuContainer.insertBefore(usageStatsBtn, logoutBtn);
+    } else {
+        userMenuContainer.appendChild(usageStatsBtn);
+    }
+
+    setupUsageStatsButton(usageStatsBtn);
+}
+
+// Setup usage stats button functionality
+function setupUsageStatsButton(usageStatsBtn) {
     // Add styles for the button and badge
     usageStatsBtn.style.cssText = `
         position: relative;
@@ -167,29 +224,7 @@ function addUsageStatsButton(userMenuContainer = null) {
         }
     });
 
-    // Add the button to the user menu (before logout button)
-    const logoutBtn = userMenuContainer.querySelector('.logout-link');
-    const devModeBtn = userMenuContainer.querySelector('.dev-mode-toggle');
-    
-    if (logoutBtn) {
-        userMenuContainer.insertBefore(usageStatsBtn, logoutBtn);
-    } else {
-        userMenuContainer.appendChild(usageStatsBtn);
-    }
-    
-    // Show dev mode button for authenticated users
-    if (devModeBtn) {
-        devModeBtn.style.display = 'block';
-        
-        // Update button text based on current mode
-        const devModeText = devModeBtn.querySelector('#dev-mode-text');
-        if (devModeText) {
-            const isDevMode = localStorage.getItem('development-mode') === 'true';
-            devModeText.textContent = isDevMode ? 'כבה מצב פיתוח' : 'הפעל מצב פיתוח';
-        }
-    }
-
-    console.log('Usage stats button added to user menu');
+    console.log('Usage stats button functionality setup complete');
 }
 
 // Update usage badge with current stats

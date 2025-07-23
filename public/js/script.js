@@ -1,7 +1,8 @@
 // Import auth-related functionality
-import { setupAuthLinks, requireAuthentication, isUserLoggedIn, getCurrentUser } from './auth-ui.js';
-import { showWarningNotification, showErrorNotification, showSimpleSuccessNotification, showInfoNotification } from './notifications.js';
-import { isDevelopmentMode, generateMockAIResponse, logAPICall, showDevNotification, initDevMode } from './dev-config.js';
+import { setupAuthLinks, requireAuthentication } from './auth-ui.js';
+import { getCurrentUser, isUserLoggedIn, waitForAuthInit } from './auth-state.js';
+import { showWarningNotification, showErrorNotification, showSimpleSuccessNotification, showInfoNotification, showDevNotification } from './notifications.js';
+import { isDevelopmentMode, generateMockAIResponse, logAPICall, initDevMode } from './dev-config.js';
 
 // Global variables
 let currentStep = 1;
@@ -935,8 +936,15 @@ function blockFormForGuests() {
     // Create and show authentication required overlay
     const formContainer = document.querySelector('.form-container, #tshirtForm');
     if (formContainer) {
+        // Check if overlay already exists
+        let authOverlay = document.getElementById('auth-required-form-overlay');
+        if (authOverlay) {
+            console.log('Auth overlay already exists, not creating duplicate');
+            return;
+        }
+        
         // Create overlay
-        const authOverlay = document.createElement('div');
+        authOverlay = document.createElement('div');
         authOverlay.id = 'auth-required-form-overlay';
         authOverlay.className = 'auth-required-form-overlay';
         authOverlay.innerHTML = `
@@ -1030,34 +1038,127 @@ async function submitForm() {
     // No need to check authentication here since form is blocked for guests
     if (validateCurrentStep()) {
         try {
-            // Add user info to form data
-            formData.userId = getCurrentUser().id;
-            formData.userEmail = getCurrentUser().email;
-            formData.submissionTime = new Date().toISOString();
+            // Wait for auth to initialize
+            await waitForAuthInit();
             
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                showErrorNotification('שגיאה', 'יש להתחבר כדי לשלוח הזמנה');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = document.querySelector('.submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'שולח הזמנה...';
+            }
+
+            // Collect all form data
+            const orderData = {
+                userId: currentUser.uid,
+                userEmail: currentUser.email,
+                
+                // Design information
+                designPrompt: document.getElementById('designPrompt')?.value || '',
+                designImage: document.getElementById('designImage')?.src || '',
+                selectedDesign: formData.selectedDesign || null,
+                designMethod: formData.designMethod || 'ai',
+                designStyle: document.querySelector('input[name="designStyle"]:checked')?.value || '',
+                designColor: document.querySelector('input[name="designColor"]:checked')?.value || '',
+                
+                // T-shirt details
+                shirtColor: document.querySelector('input[name="shirtColor"]:checked')?.value || '',
+                
+                // Text overlays
+                frontText: document.getElementById('frontText')?.value || '',
+                frontTextPosition: document.querySelector('input[name="frontTextPosition"]:checked')?.value || 'none',
+                backText: document.getElementById('backText')?.value || '',
+                backTextPosition: document.querySelector('input[name="backTextPosition"]:checked')?.value || 'none',
+                
+                // Collect sizes and quantities
+                sizes: {},
+                totalQuantity: 0,
+                
+                // Customer details
+                fullName: document.getElementById('fullName')?.value || '',
+                phone: document.getElementById('phone')?.value || '',
+                email: document.getElementById('email')?.value || '',
+                address: document.getElementById('address')?.value || '',
+                city: document.getElementById('city')?.value || '',
+                postalCode: document.getElementById('postalCode')?.value || '',
+                notes: document.getElementById('notes')?.value || '',
+                
+                // Order details
+                eventType: document.querySelector('input[name="eventType"]:checked')?.value || document.getElementById('customEventType')?.value || '',
+                eventDate: document.getElementById('eventDate')?.value || '',
+                specialRequests: document.getElementById('specialRequests')?.value || '',
+                
+                submissionTime: new Date().toISOString()
+            };
+
+            // Collect size quantities
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            quantityInputs.forEach(input => {
+                const size = input.getAttribute('data-size');
+                const quantity = parseInt(input.value) || 0;
+                if (quantity > 0) {
+                    orderData.sizes[size] = quantity;
+                    orderData.totalQuantity += quantity;
+                }
+            });
+
+            // Import and use order service
+            const { orderService } = await import('./order-service.js');
+            const result = await orderService.saveOrder(orderData);
             
-            // Redirect to success page or show success message
-            alert('ההזמנה התקבלה בהצלחה!');
-            window.location.href = '/orders';
+            if (result.success) {
+                // Store order data in formData for potential future use
+                formData = { ...formData, ...orderData, orderId: result.orderId };
+                
+                showSimpleSuccessNotification(`הזמנה #${result.orderId.substring(0, 8).toUpperCase()} נשלחה בהצלחה!`);
+                
+                // Redirect to orders page after short delay
+                setTimeout(() => {
+                    window.location.href = '/public/html/my-orders.html';
+                }, 2000);
+                
+            } else {
+                throw new Error(result.error || 'Failed to save order');
+            }
+            
         } catch (error) {
             console.error('Error submitting form:', error);
-            alert('אירעה שגיאה בשליחת הטופס. אנא נסה שוב מאוחר יותר.');
+            showErrorNotification('שגיאה', 'אירעה שגיאה בשליחת ההזמנה. אנא נסה שוב מאוחר יותר.');
+        } finally {
+            // Restore button state
+            const submitBtn = document.querySelector('.submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'שלח הזמנה';
+            }
         }
     }
 }
 
 // Initialize form
-function initForm(skipAuthCheck = false) {
+async function initForm(skipAuthCheck = false) {
     setupNavigation();
     
     // Check if we're on the order form page and require authentication
     if (window.location.pathname.includes('/order') || window.location.pathname.includes('order-form.html')) {
-        if (!skipAuthCheck && !isUserLoggedIn()) {
-            // Block the entire form for non-authenticated users
-            blockFormForGuests();
-            return;
+        if (!skipAuthCheck) {
+            // Wait for auth to initialize
+            await waitForAuthInit();
+            
+            if (!isUserLoggedIn()) {
+                // Block the entire form for non-authenticated users
+                blockFormForGuests();
+                return;
+            } else {
+                // User is authenticated, enable the form
+                enableFormForAuthenticatedUser();
+            }
         } else {
             // User is authenticated, enable the form
             enableFormForAuthenticatedUser();
@@ -1265,8 +1366,15 @@ function initForm(skipAuthCheck = false) {
 }
 
 // Call initialization when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    initForm();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize auth system first (mark as initialized to prevent double init)
+    if (!window.authUIInitialized) {
+        await setupAuthLinks();
+        window.authUIInitialized = true;
+    }
+    
+    // Then initialize form and other components
+    await initForm();
     loadAuthModals();
     
     // Initialize development mode

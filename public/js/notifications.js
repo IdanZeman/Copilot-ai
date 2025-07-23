@@ -289,3 +289,38 @@ function getRandomColor() {
     const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#6c5ce7', '#a29bfe'];
     return colors[Math.floor(Math.random() * colors.length)];
 }
+
+// Development mode notification (orange/yellow theme)
+export function showDevNotification(message, duration = 5000) {
+    console.log('🔧 DEV MODE:', message);
+    
+    // Create visual dev indicator
+    const devIndicator = document.createElement('div');
+    devIndicator.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 2px solid rgba(255,255,255,0.3);
+        font-family: 'Segoe UI', Arial, sans-serif;
+    `;
+    devIndicator.textContent = '🔧 DEV MODE: ' + message;
+    
+    document.body.appendChild(devIndicator);
+    
+    // Remove after duration
+    setTimeout(() => {
+        if (devIndicator.parentNode) {
+            devIndicator.remove();
+        }
+    }, duration);
+    
+    return devIndicator;
+}

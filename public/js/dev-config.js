@@ -1,4 +1,6 @@
 // Development configuration for testing without AI costs
+import { showDevNotification, showInfoNotification } from './notifications.js';
+
 export const DEV_CONFIG = {
     // Set to true to enable development mode (no real AI requests)
     DEVELOPMENT_MODE: localStorage.getItem('development-mode') === 'true',
@@ -72,42 +74,20 @@ export function logAPICall(endpoint, params) {
     }
 }
 
-// Show development notification
-export function showDevNotification(message) {
+// Show development notification using the imported function
+function showDevNotificationInternal(message) {
     if (DEV_CONFIG.SHOW_DEV_NOTIFICATIONS) {
         console.log('🔧 DEV MODE:', message);
         
-        // Create visual dev indicator
-        const devIndicator = document.createElement('div');
-        devIndicator.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.3);
-        `;
-        devIndicator.textContent = '🔧 DEV MODE: ' + message;
-        
-        document.body.appendChild(devIndicator);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            if (devIndicator.parentNode) {
-                devIndicator.remove();
-            }
-        }, 3000);
+        // Use the imported showDevNotification
+        showDevNotification(message);
     }
 }
 
 // Initialize development mode indicator
 export function initDevMode() {
+    updateDevModeUI();
+    
     if (isDevelopmentMode()) {
         // Add permanent dev indicator
         const permIndicator = document.createElement('div');
@@ -132,6 +112,51 @@ export function initDevMode() {
         document.body.appendChild(permIndicator);
         
         console.log('🔧 DEVELOPMENT MODE ENABLED - No real AI requests will be made');
-        showDevNotification('מצב פיתוח פעיל - חסכון בעלויות AI');
+        showDevNotificationInternal('מצב פיתוח פעיל - חסכון בעלויות AI');
     }
+}
+
+// Toggle development mode
+export function toggleDevMode() {
+    const currentMode = localStorage.getItem('development-mode') === 'true';
+    const newMode = !currentMode;
+    
+    localStorage.setItem('development-mode', newMode.toString());
+    
+    // Update UI
+    updateDevModeUI();
+    
+    // Show notification
+    if (newMode) {
+        showDevNotificationInternal('מצב פיתוח הופעל - קריאות AI חסומות');
+    } else {
+        showInfoNotification('מצב פיתוח כובה - קריאות AI מופעלות');
+    }
+    
+    // Reload page to apply changes properly
+    setTimeout(() => {
+        window.location.reload();
+    }, 1500);
+}
+
+// Update dev mode UI elements
+export function updateDevModeUI() {
+    const isDevMode = localStorage.getItem('development-mode') === 'true';
+    
+    // Update button text
+    const devModeText = document.getElementById('dev-mode-text');
+    if (devModeText) {
+        devModeText.textContent = isDevMode ? 'כבה מצב פיתוח' : 'הפעל מצב פיתוח';
+    }
+    
+    // Update indicator visibility
+    const devIndicator = document.getElementById('dev-indicator');
+    if (devIndicator) {
+        devIndicator.style.display = isDevMode ? 'flex' : 'none';
+    }
+}
+
+// Legacy function name for backward compatibility
+export function updateDevModeButtonText() {
+    updateDevModeUI();
 }
