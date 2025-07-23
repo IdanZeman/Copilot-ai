@@ -316,6 +316,16 @@ window.onclick = function(event) {
     }
 }
 
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('orderModal');
+        if (modal && modal.style.display === 'block') {
+            modal.style.display = 'none';
+        }
+    }
+});
+
 // Make functions global for HTML onclick handlers
 window.showOrderDetails = showOrderDetails;
 window.closeModal = closeModal;
@@ -327,6 +337,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize auth state and load orders
     await authStateManager.initialize();
     loadOrders();
+    
+    // Add event listener to close button
+    const closeButton = document.getElementById('closeModal');
+    if (closeButton) {
+        closeButton.addEventListener('click', closeModal);
+    }
     
     // Listen for auth state changes
     authStateManager.addListener(() => {
