@@ -101,7 +101,10 @@ async function loadOrders() {
         
         // Check if user is authenticated
         const currentUser = getCurrentUser();
+        console.log('👤 Current user object:', currentUser);
+        
         if (!currentUser) {
+            console.log('❌ No current user found');
             ordersContainer.innerHTML = `
                 <div class="no-orders">
                     <i class="fas fa-user-lock"></i>
@@ -113,6 +116,8 @@ async function loadOrders() {
             return;
         }
 
+        console.log('✅ User is authenticated, UID:', currentUser.uid);
+
         // Show loading state
         ordersContainer.innerHTML = `
             <div class="loading-orders">
@@ -122,21 +127,42 @@ async function loadOrders() {
         `;
 
         // Fetch orders from Firebase
-        const orders = await orderService.getUserOrders(currentUser.uid);
-        
-        if (orders.length === 0) {
+        console.log('🔍 Fetching orders for user:', currentUser.uid);
+        try {
+            // First, let's see all orders for debugging
+            const allOrders = await orderService.getAllOrders();
+            console.log('🔍 DEBUG: All orders in database:', allOrders);
+            
+            const orders = await orderService.getUserOrders(currentUser.uid);
+            console.log('📦 Retrieved orders:', orders.length, orders);
+            
+            if (orders.length === 0) {
+                console.log('ℹ️ No orders found, showing empty state');
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fas fa-box-open"></i>
+                        <h3>אין הזמנות עדיין</h3>
+                        <p>התחל להזמין חולצות מותאמות אישית</p>
+                        <a href="./order-form.html" class="cta-button">התחל לעצב</a>
+                    </div>
+                `;
+            } else {
+                console.log('✅ Displaying orders');
+                // Format orders for display and render
+                const formattedOrders = orders.map(order => orderService.formatOrderForDisplay(order));
+                console.log('🎨 Formatted orders:', formattedOrders);
+                ordersContainer.innerHTML = formattedOrders.map(order => createOrderCard(order)).join('');
+            }
+        } catch (fetchError) {
+            console.error('❌ Error fetching orders:', fetchError);
             ordersContainer.innerHTML = `
-                <div class="no-orders">
-                    <i class="fas fa-box-open"></i>
-                    <h3>אין הזמנות עדיין</h3>
-                    <p>התחל להזמין חולצות מותאמות אישית</p>
-                    <a href="./order-form.html" class="cta-button">התחל לעצב</a>
+                <div class="error-orders">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>שגיאה בטעינת הזמנות</h3>
+                    <p>שגיאה: ${fetchError.message}</p>
+                    <button onclick="loadOrders()" class="cta-button">נסה שוב</button>
                 </div>
             `;
-        } else {
-            // Format orders for display and render
-            const formattedOrders = orders.map(order => orderService.formatOrderForDisplay(order));
-            ordersContainer.innerHTML = formattedOrders.map(order => createOrderCard(order)).join('');
         }
     } catch (error) {
         console.error('Error loading orders:', error);
@@ -180,7 +206,7 @@ async function showOrderDetails(orderId) {
         modal.style.display = 'block';
 
         // Get all user orders and find the specific one
-        const orders = await orderService.getUserOrders(currentUser.id);
+        const orders = await orderService.getUserOrders(currentUser.uid);
         const order = orders.find(o => o.id === orderId);
 
         if (!order) {

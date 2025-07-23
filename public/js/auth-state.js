@@ -39,16 +39,12 @@ class AuthStateManager {
                         loginTime: new Date().toISOString()
                     };
                     
-                    // Save to localStorage
+                    // Store in localStorage
                     localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-                    
-                    console.log('User signed in:', this.currentUser);
                 } else {
                     // User is signed out
                     this.currentUser = null;
                     localStorage.removeItem('currentUser');
-                    
-                    console.log('User signed out');
                 }
 
                 this.isInitialized = true;
@@ -56,23 +52,25 @@ class AuthStateManager {
                 // Notify all listeners
                 this.notifyListeners();
                 
-                // Resolve the promise on first call
-                if (!this.initPromise.resolved) {
-                    this.initPromise.resolved = true;
-                    resolve();
-                }
+                resolve();
             });
         });
     }
 
-    // Wait for initialization to complete
-    async waitForInit() {
-        await this.initPromise;
+    // Notify all listeners of auth state change
+    notifyListeners() {
+        this.listeners.forEach(callback => {
+            try {
+                callback(this.currentUser, this.isUserLoggedIn());
+            } catch (error) {
+                console.error('Error in auth state listener:', error);
+            }
+        });
     }
 
     // Check if user is logged in
     isUserLoggedIn() {
-        return !!this.currentUser;
+        return this.currentUser !== null;
     }
 
     // Get current user
@@ -98,41 +96,30 @@ class AuthStateManager {
         }
     }
 
-    // Notify all listeners of state change
-    notifyListeners() {
-        this.listeners.forEach(callback => {
-            try {
-                callback(this.currentUser, this.isUserLoggedIn());
-            } catch (error) {
-                console.error('Error in auth state listener:', error);
-            }
-        });
-    }
-
-    // Force refresh of UI state
-    refreshUI() {
-        this.notifyListeners();
+    // Wait for auth initialization
+    async waitForInit() {
+        return this.initPromise;
     }
 }
 
-// Create singleton instance
+// Create and export singleton instance
 const authStateManager = new AuthStateManager();
 
-// Export functions for backward compatibility
-export function isUserLoggedIn() {
-    return authStateManager.isUserLoggedIn();
-}
-
+// Export convenience functions
 export function getCurrentUser() {
     return authStateManager.getCurrentUser();
 }
 
+export function isUserLoggedIn() {
+    return authStateManager.isUserLoggedIn();
+}
+
 export function addAuthStateListener(callback) {
-    authStateManager.addListener(callback);
+    return authStateManager.addListener(callback);
 }
 
 export function removeAuthStateListener(callback) {
-    authStateManager.removeListener(callback);
+    return authStateManager.removeListener(callback);
 }
 
 export function waitForAuthInit() {
@@ -140,11 +127,12 @@ export function waitForAuthInit() {
 }
 
 export function refreshAuthUI() {
-    authStateManager.refreshUI();
+    // Force refresh of auth state
+    authStateManager.notifyListeners();
 }
 
 // Export the manager instance
 export { authStateManager };
 
-// Initialize on module load
-console.log('Auth state manager initialized');
+// Export as default for backward compatibility
+export default authStateManager;

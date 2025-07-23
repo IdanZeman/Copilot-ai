@@ -210,7 +210,7 @@ function validateDesignSelection() {
 
 function validateSizeSelection() {
     // Step 2: Description validation
-    const description = document.getElementById('description').value.trim();
+    const description = document.getElementById('designPrompt').value.trim();
     if (!description) {
         showWarningNotification('אנא תאר מה החולצה צריכה לבטא');
         return false;
@@ -292,7 +292,7 @@ function validateQuantity() {
     // If front text is selected, validate it
     const frontTextPosition = document.querySelector('input[name="frontTextPosition"]:checked');
     if (frontTextPosition && frontTextPosition.value !== 'none') {
-        const frontText = document.getElementById('frontOverlayText').value.trim();
+        const frontText = document.getElementById('frontText').value.trim();
         if (!frontText) {
             showWarningNotification('אנא הכנס את הטקסט לחלק הקדמי');
             return false;
@@ -464,7 +464,7 @@ function updateFrontTextPreview() {
     const previewTopCaption = document.getElementById('previewTopCaption');
     const previewBottomCaption = document.getElementById('previewBottomCaption');
     const frontTextPosition = document.querySelector('input[name="frontTextPosition"]:checked');
-    const frontOverlayText = document.getElementById('frontOverlayText');
+    const frontOverlayText = document.getElementById('frontText');
     
     if (!previewTopCaption || !previewBottomCaption) return;
     
@@ -662,7 +662,7 @@ async function generateBackDesign() {
     }
     
     // No need to check authentication here since form is blocked for guests
-    const description = document.getElementById('description').value.trim();
+    const description = document.getElementById('designPrompt').value.trim();
     if (!description) {
         showWarningNotification('אנא מלא תחילה את השלב הקודם עם תיאור העיצוב');
         return;
@@ -1061,7 +1061,14 @@ async function submitForm() {
                 
                 // Design information
                 designPrompt: document.getElementById('designPrompt')?.value || '',
-                designImage: document.getElementById('designImage')?.src || '',
+                designImage: (() => {
+                    const imgSrc = document.getElementById('designImage')?.src || '';
+                    // Convert absolute localhost URLs to relative paths
+                    if (imgSrc.includes('localhost')) {
+                        return imgSrc.replace(/^.*localhost:\d+/, '');
+                    }
+                    return imgSrc;
+                })(),
                 selectedDesign: formData.selectedDesign || null,
                 designMethod: formData.designMethod || 'ai',
                 designStyle: document.querySelector('input[name="designStyle"]:checked')?.value || '',
@@ -1120,7 +1127,7 @@ async function submitForm() {
                 
                 // Redirect to orders page after short delay
                 setTimeout(() => {
-                    window.location.href = '/public/html/my-orders.html';
+                    window.location.href = '../html/my-orders.html';
                 }, 2000);
                 
             } else {
@@ -1225,7 +1232,7 @@ async function initForm(skipAuthCheck = false) {
     });
     
     // Setup event listener for front overlay text input
-    const frontOverlayText = document.getElementById('frontOverlayText');
+    const frontOverlayText = document.getElementById('frontText');
     if (frontOverlayText) {
         frontOverlayText.addEventListener('input', () => {
             // Update character counter
@@ -1252,7 +1259,7 @@ async function initForm(skipAuthCheck = false) {
     });
     
     // Description character counter
-    const description = document.getElementById('description');
+    const description = document.getElementById('designPrompt');
     if (description) {
         description.addEventListener('input', () => {
             const count = description.value.length;

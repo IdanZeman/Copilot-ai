@@ -9,6 +9,8 @@ class OrderService {
     // Save order to database
     async saveOrder(orderData) {
         try {
+            console.log('💾 Starting to save order:', orderData);
+            
             const order = {
                 userId: orderData.userId,
                 userEmail: orderData.userEmail,
@@ -64,8 +66,11 @@ class OrderService {
                 updatedAt: serverTimestamp()
             };
 
+            console.log('💾 Order object prepared:', order);
+            console.log('💾 Saving to collection:', this.ordersCollection);
+            
             const docRef = await addDoc(collection(db, this.ordersCollection), order);
-            console.log('Order saved with ID:', docRef.id);
+            console.log('✅ Order saved successfully with ID:', docRef.id);
             
             return {
                 success: true,
@@ -101,27 +106,58 @@ class OrderService {
     // Get user's orders
     async getUserOrders(userId) {
         try {
+            console.log('🔎 Querying orders for userId:', userId);
+            console.log('🔎 Collection name:', this.ordersCollection);
+            console.log('🔎 Database object:', db);
+            
+            // Try without orderBy first to see if that's the issue
             const q = query(
                 collection(db, this.ordersCollection),
-                where('userId', '==', userId),
-                orderBy('createdAt', 'desc')
+                where('userId', '==', userId)
             );
             
+            console.log('🔎 Firebase query created successfully (without orderBy)');
             const querySnapshot = await getDocs(q);
+            console.log('🔎 Query executed, processing results...');
+            
             const orders = [];
             
             querySnapshot.forEach((doc) => {
+                console.log('📄 Found order document:', doc.id, doc.data());
                 orders.push({
                     id: doc.id,
                     ...doc.data()
                 });
             });
             
-            console.log(`Found ${orders.length} orders for user ${userId}`);
+            console.log(`✅ Found ${orders.length} orders for user ${userId}`);
             return orders;
             
         } catch (error) {
             console.error('Error getting user orders:', error);
+            return [];
+        }
+    }
+
+    // Debug function - get all orders (for debugging only)
+    async getAllOrders() {
+        try {
+            console.log('🔍 DEBUG: Getting ALL orders from collection');
+            const querySnapshot = await getDocs(collection(db, this.ordersCollection));
+            const allOrders = [];
+            
+            querySnapshot.forEach((doc) => {
+                console.log('📄 DEBUG: Found document:', doc.id, doc.data());
+                allOrders.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            
+            console.log(`🔍 DEBUG: Total documents in collection: ${allOrders.length}`);
+            return allOrders;
+        } catch (error) {
+            console.error('❌ DEBUG: Error getting all orders:', error);
             return [];
         }
     }
