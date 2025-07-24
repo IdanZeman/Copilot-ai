@@ -209,15 +209,24 @@ function validateDesignSelection() {
 }
 
 function validateSizeSelection() {
-    // Step 2: Description validation
-    const description = document.getElementById('designPrompt').value.trim();
-    if (!description) {
-        showWarningNotification('אנא תאר מה החולצה צריכה לבטא');
+    // Get all size inputs
+    const sizeInputs = document.querySelectorAll('.quantity-input');
+    let totalQuantity = 0;
+
+    // Calculate total quantity
+    sizeInputs.forEach(input => {
+        if (input && input.value) {
+            totalQuantity += parseInt(input.value) || 0;
+        }
+    });
+
+    // Check if at least one size is selected
+    if (totalQuantity === 0) {
+        showWarningNotification('אנא בחר לפחות מידה אחת וכמות');
         return false;
     }
-    
-    if (description.length < 10) {
-        showWarningNotification('אנא הכנס תיאור מפורט יותר (לפחות 10 תווים)');
+
+    return true;
         return false;
     }
     
