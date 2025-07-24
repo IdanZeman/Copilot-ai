@@ -694,9 +694,11 @@ body {
     margin: 5% auto;
     border-radius: 15px;
     max-width: 800px;
-    max-height: 80vh;
-    overflow-y: auto;
+    max-height: 85vh;
+    overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
@@ -705,6 +707,7 @@ body {
     align-items: center;
     padding: 2rem;
     border-bottom: 1px solid #eee;
+    flex-shrink: 0; /* לא יתכווץ */
 }
 
 .modal-header h2 {
@@ -734,6 +737,8 @@ body {
 
 .modal-body {
     padding: 2rem;
+    flex: 1;
+    overflow-y: auto; /* רק כאן תהיה גלילה */
 }
 
 .container {

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Orders</title>
+</head>
+<body>
+    <h1>Debug Orders Page</h1>
+    <button onclick="checkAllOrders()">Check All Orders</button>
+    <button onclick="checkUserOrders()">Check User Orders</button>
+    <div id="results"></div>
+
+    <script type="module">
+        import { orderService } from '../js/order-service.js';
+        import { getCurrentUser, waitForAuthInit } from '../js/auth-state.js';
+
+        window.checkAllOrders = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Checking all orders...</p>';
+            
+            try {
+                const allOrders = await orderService.getAllOrders();
+                results.innerHTML = `
+                    <h3>All Orders (${allOrders.length}):</h3>
+                    <pre>${JSON.stringify(allOrders, null, 2)}</pre>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        };
+
+        window.checkUserOrders = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Checking user orders...</p>';
+            
+            try {
+                await waitForAuthInit();
+                const currentUser = getCurrentUser();
+                
+                if (!currentUser) {
+                    results.innerHTML = '<p>No user logged in</p>';
+                    return;
+                }
+
+                const userOrders = await orderService.getUserOrders(currentUser.uid);
+                results.innerHTML = `
+                    <h3>User Orders for ${currentUser.uid} (${userOrders.length}):</h3>
+                    <pre>${JSON.stringify(userOrders, null, 2)}</pre>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

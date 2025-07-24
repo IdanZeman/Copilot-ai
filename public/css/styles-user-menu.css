@@ -33,12 +33,36 @@
     background: var(--background-white);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-soft);
-    width: 220px;
+    width: 280px;
+    min-width: 280px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
     transition: all var(--transition-speed) ease;
     z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* וידוא שהתפריט נשאר בתוך גבולות המסך - יישור לשמאל אם נחתך מימין */
+@media (max-width: 480px) {
+    .user-menu {
+        right: -50px;
+        width: 320px;
+        min-width: 320px;
+    }
+}
+
+@media (max-width: 400px) {
+    .user-menu {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        min-width: auto;
+        transform: translateY(0);
+    }
 }
 
 /* וידוא שהתפריט נשאר בתוך גבולות המסך */
@@ -161,19 +185,31 @@
     
     .user-menu {
         position: fixed;
-        top: auto;
-        bottom: 0;
-        right: 0;
-        left: 0;
-        transform: translateY(100%);
-        width: 100%;
-        max-width: none;
-        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        top: 60px;
+        right: 10px;
+        left: auto;
+        width: 90vw;
+        max-width: 350px;
+        min-width: 280px;
+        transform: translateY(0);
+        border-radius: var(--border-radius);
         margin-top: 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
     
     .user-menu-trigger:hover .user-menu,
     .user-menu:hover {
         transform: translateY(0);
+    }
+}
+
+/* עבור מסכים קטנים מאוד */
+@media (max-width: 400px) {
+    .user-menu {
+        right: 5px;
+        left: 5px;
+        width: auto;
+        min-width: auto;
+        max-width: none;
     }
 }

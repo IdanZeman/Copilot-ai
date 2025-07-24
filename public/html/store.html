@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>החנות שלנו - AI חולצות</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/styles-store.css">
+    <link rel="stylesheet" href="../css/styles-user-menu.css">
+    <link rel="stylesheet" href="../css/styles-auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>מעצב החולצות שלי</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="./index.html" class="nav-link">בית</a>
+                </li>
+                <li class="nav-item">
+                    <a href="./store.html" class="nav-link active">החנות</a>
+                </li>
+                <li class="nav-item">
+                    <a href="./my-orders.html" class="nav-link">ההזמנות שלי</a>
+                </li>
+                <li class="nav-item user-menu-item">
+                    <!-- User menu content -->
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container store-page">
+        <!-- Categories Section -->
+        <div class="categories-section">
+            <h2>קטגוריות</h2>
+            <div class="categories-grid">
+                <div class="category-card" data-category="tshirts">
+                    <i class="fas fa-tshirt"></i>
+                    <h3>חולצות קצרות</h3>
+                </div>
+                <div class="category-card" data-category="longsleeve">
+                    <i class="fas fa-tshirt"></i>
+                    <h3>חולצות ארוכות</h3>
+                </div>
+                <div class="category-card" data-category="hoodies">
+                    <i class="fas fa-hood-cloak"></i>
+                    <h3>סווטשירטים</h3>
+                </div>
+                <!-- Add more categories as needed -->
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-section">
+            <div class="filters-bar">
+                <div class="search-box">
+                    <input type="text" placeholder="חיפוש מוצרים...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="sort-options">
+                    <select id="sortBy">
+                        <option value="popular">הכי פופולרי</option>
+                        <option value="newest">חדש ביותר</option>
+                        <option value="priceAsc">מחיר: מהנמוך לגבוה</option>
+                        <option value="priceDesc">מחיר: מהגבוה לנמוך</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Quick View Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>פרטי המוצר</h2>
+                <button class="close-modal" onclick="closeProductModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="product-preview">
+                    <img src="" alt="תמונת מוצר" id="modalProductImage">
+                </div>
+                <div class="product-info">
+                    <h3 id="modalProductName"></h3>
+                    <p id="modalProductDescription"></p>
+                    <div class="product-price" id="modalProductPrice"></div>
+                    <a href="./order-form.html" class="start-design-btn">התחל לעצב</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/store.js"></script>
+    <script type="module" src="../js/auth-state.js"></script>
+    <script type="module" src="../js/user-menu.js"></script>
+</body>
+</html>

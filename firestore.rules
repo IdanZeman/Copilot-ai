@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Usage tracking documents - users can read/write their own data
+    match /usage/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Design generation records - users can create their own records
+    match /designGenerations/{docId} {
+      allow create: if request.auth != null && 
+                   request.auth.uid == request.resource.data.userId;
+      allow read: if request.auth != null && 
+                 request.auth.uid == resource.data.userId;
+    }
+    
+    // Orders collection - users can create/read/update their own orders
+    match /orders/{orderId} {
+      allow create: if request.auth != null && 
+                   request.auth.uid == request.resource.data.userId;
+      allow read, update, delete: if request.auth != null && 
+                                 request.auth.uid == resource.data.userId;
+    }
+    
+    // Block all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,25 +1,16 @@
 <!DOCTYPE html>
-<htm                <li class="nav-item">
-                    <a href="./index.html" class="nav-link">בית</a>
-                </li>
-                <li class="nav-item">
-                    <a href="./my-orders.html" class="nav-link">ההזמנות שלי</a>
-                </li>
-                <li class="nav-item">
-                    <a href="./order-form.html" class="nav-link active cta-link">התחל לעצב</a>
-<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מעצב החולצות שלי</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/styles-designs.css">
-    <link rel="stylesheet" href="/css/styles-design.css">
-    <link rel="stylesheet" href="/css/styles-user-menu.css">
-    <link rel="stylesheet" href="/css/styles-auth.css">
-    <link rel="stylesheet" href="/css/notification.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/styles-designs.css">
+    <link rel="stylesheet" href="../css/styles-design.css">
+    <link rel="stylesheet" href="../css/styles-user-menu.css">
+    <link rel="stylesheet" href="../css/styles-auth.css">
+    <link rel="stylesheet" href="../css/notification.css">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -52,6 +43,10 @@
                                 <a href="#" class="user-menu-link login-link">
                                     <i class="fab fa-google"></i>
                                     התחבר עם Google
+                                </a>
+                                <a href="#" class="user-menu-link dev-mode-toggle" onclick="toggleDevMode()">
+                                    <i class="fas fa-code"></i>
+                                    <span id="dev-mode-text">הפעל מצב פיתוח</span>
                                 </a>
                                 <a href="#" class="user-menu-link logout-link" style="display: none;">
                                     <i class="fas fa-sign-out-alt"></i>
@@ -165,7 +160,7 @@
                 <h2>מה החולצה צריכה לבטא?</h2>
                 <div class="input-group">
                     <textarea 
-                        id="description" 
+                        id="designPrompt" 
                         name="description" 
                         placeholder="תאר/י במילים שלך מה החולצה צריכה לבטא... (לדוגמה: זוג שמתחתן בשקיעה, צוות לוחמים רצים עם אלונקה, רגע של ניצחון)"
                         rows="4"
@@ -195,7 +190,7 @@
                 <div class="design-container" id="designContainer" style="display: none;">
                     <div class="design-wrapper">
                         <div class="design-preview">
-                            <img src="/images/default-tshirt.png" alt="עיצוב מותאם אישית" id="designImage">
+                            <img src="../images/default-tshirt.png" alt="עיצוב מותאם אישית" id="designImage">
                         </div>
                     </div>
                 </div>
@@ -434,7 +429,7 @@
                         
                         <div class="front-overlay-text-input" id="frontOverlayTextInput" style="display: none;">
                             <div class="input-group">
-                                <input type="text" id="frontOverlayText" name="frontOverlayText" 
+                                <input type="text" id="frontText" name="frontOverlayText" 
                                        placeholder="הכנס/י את הטקסט שברצונך להוסיף..." maxlength="30">
                                 <div class="char-counter">
                                     <span id="frontOverlayTextCount">0</span>/30
@@ -553,23 +548,23 @@
                         <div class="size-quantity-grid">
                             <div class="size-row">
                                 <label>S</label>
-                                <input type="number" name="quantity_s" min="0" value="0" class="quantity-input">
+                                <input type="number" name="quantity_s" min="0" value="0" class="quantity-input" data-size="S">
                             </div>
                             <div class="size-row">
                                 <label>M</label>
-                                <input type="number" name="quantity_m" min="0" value="0" class="quantity-input">
+                                <input type="number" name="quantity_m" min="0" value="0" class="quantity-input" data-size="M">
                             </div>
                             <div class="size-row">
                                 <label>L</label>
-                                <input type="number" name="quantity_l" min="0" value="0" class="quantity-input">
+                                <input type="number" name="quantity_l" min="0" value="0" class="quantity-input" data-size="L">
                             </div>
                             <div class="size-row">
                                 <label>XL</label>
-                                <input type="number" name="quantity_xl" min="0" value="0" class="quantity-input">
+                                <input type="number" name="quantity_xl" min="0" value="0" class="quantity-input" data-size="XL">
                             </div>
                             <div class="size-row">
                                 <label>XXL</label>
-                                <input type="number" name="quantity_xxl" min="0" value="0" class="quantity-input">
+                                <input type="number" name="quantity_xxl" min="0" value="0" class="quantity-input" data-size="XXL">
                             </div>
                         </div>
                         <div class="total-quantity">
@@ -581,16 +576,16 @@
                     <div class="contact-info">
                         <h3>פרטי קשר</h3>
                         <div class="input-group">
-                            <input type="text" name="customerName" placeholder="שם מלא" required>
+                            <input type="text" id="fullName" name="customerName" placeholder="שם מלא" required>
                         </div>
                         <div class="input-group">
-                            <input type="email" name="customerEmail" placeholder="אימייל" required>
+                            <input type="email" id="email" name="customerEmail" placeholder="אימייל" required>
                         </div>
                         <div class="input-group">
-                            <input type="tel" name="customerPhone" placeholder="טלפון" required>
+                            <input type="tel" id="phone" name="customerPhone" placeholder="טלפון" required>
                         </div>
                         <div class="input-group">
-                            <textarea name="customerNotes" placeholder="הערות נוספות (אופציונלי)" rows="3"></textarea>
+                            <textarea id="notes" name="customerNotes" placeholder="הערות נוספות (אופציונלי)" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
@@ -627,13 +622,25 @@
             </div>
         </div>
     </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Auth Modal Templates -->
     <div id="auth-modals-container"></div>
 
-    <script type="module" src="/js/auth-ui.js"></script>
-    <script type="module" src="/js/script.js"></script>
-    <script type="module" src="/js/user-menu.js"></script>
-    <script type="module" src="/js/notifications.js"></script>
+    <script type="module" src="../js/auth-state.js"></script>
+    <script type="module" src="../js/auth-ui.js"></script>
+    <script type="module" src="../js/script.js"></script>
+    <script type="module" src="../js/user-menu.js"></script>
+    <script type="module" src="../js/notifications.js"></script>
+    
+    <script type="module">
+        import { initUserMenu } from '../js/user-menu.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initUserMenu();
+        });
+    </script>
 </body>
 </html>
