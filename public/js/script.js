@@ -154,16 +154,31 @@ function validateCurrentStep() {
         case 1:
             return validateDesignSelection();
         case 2:
-            return validateSizeSelection();
+            return validateDescription();
         case 3:
             return validateColorSelection();
         case 4:
             return validateQuantity();
         case 5:
-            return validateContactInfo();
+            return validateSizeSelection() && validateContactInfo();
         default:
             return true;
     }
+}
+
+// Validate description for step 2
+function validateDescription() {
+    const description = document.getElementById('designPrompt');
+    if (!description || !description.value.trim()) {
+        showWarningNotification('אנא תאר מה החולצה צריכה לבטא');
+        return false;
+    }
+    if (description.value.trim().length < 10) {
+        showWarningNotification('אנא הכנס תיאור מפורט יותר (לפחות 10 תווים)');
+        return false;
+    }
+    formData.description = description.value.trim();
+    return true;
 }
 
 // Navigation event handlers
