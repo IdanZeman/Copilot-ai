@@ -207,7 +207,6 @@ function validateDesignSelection() {
     formData.eventType = eventType.value;
     return true;
 }
-
 function validateSizeSelection() {
     // Get all size inputs
     const sizeInputs = document.querySelectorAll('.quantity-input');
@@ -226,8 +225,9 @@ function validateSizeSelection() {
         return false;
     }
 
+    // Save the total quantity to formData
+    formData.totalQuantity = totalQuantity;
     return true;
-}
 }
 
 function validateColorSelection() {
