@@ -227,11 +227,7 @@ function validateSizeSelection() {
     }
 
     return true;
-        return false;
-    }
-    
-    formData.description = description;
-    return true;
+}
 }
 
 function validateColorSelection() {
