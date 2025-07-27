@@ -596,7 +596,7 @@ async function generateDesign() {
     }
     
     // No need to check authentication here since form is blocked for guests
-    const prompt = document.getElementById('design-prompt').value.trim();
+    const prompt = document.getElementById('designPrompt').value.trim();
     if (!prompt) {
         showWarningNotification('אנא הכנס תיאור לעיצוב המבוקש');
         return;
