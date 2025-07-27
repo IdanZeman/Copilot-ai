@@ -676,7 +676,10 @@ async function generateDesign() {
             };
             console.log('📤 Request body:', requestBody);
             
-            const response = await fetch(`${getAPIBaseURL()}/api/generate-design`, {
+            const apiURL = `${getAPIBaseURL()}/api/generate-design`;
+            console.log('🌐 API URL:', apiURL);
+            
+            const response = await fetch(apiURL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -800,7 +803,10 @@ async function generateBackDesign() {
             };
             console.log('📤 Request body for back design:', requestBody);
             
-            const response = await fetch(`${getAPIBaseURL()}/api/generate-design`, {
+            const apiURL = `${getAPIBaseURL()}/api/generate-design`;
+            console.log('🌐 API URL:', apiURL);
+            
+            const response = await fetch(apiURL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
