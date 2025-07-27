@@ -1058,10 +1058,9 @@ async function improveDesign() {
         improveBtn.disabled = true;
         improveBtn.textContent = 'משפר עיצוב...';
         
-        // Validate that we have all required data
-        if (!formData.description || !formData.designColor || 
-            !formData.designStyle || !formData.shirtColor) {
-            throw new Error('חסרים פרטי עיצוב נדרשים. אנא מלא את כל השדות בטופס.');
+        // Validate that we have the original description
+        if (!formData.description) {
+            throw new Error('חסר תיאור העיצוב המקורי');
         }
         
         // Prepare improvement request
@@ -1073,11 +1072,7 @@ async function improveDesign() {
             body: JSON.stringify({
                 originalPrompt: formData.description,
                 prompt: improvementPrompt.value.trim(),
-                eventType: formData.eventType || 'general',
-                designType: formData.designType || 'front',
-                designColor: formData.designColor,
-                designStyle: formData.designStyle,
-                shirtColor: formData.shirtColor
+                eventType: formData.eventType || 'general'
             })
         });
         
@@ -1419,9 +1414,26 @@ async function submitForm() {
     }
 }
 
+// Helper function to save form choices
+function saveFormChoice(name, value) {
+    formData[name] = value;
+    console.log(`💾 Saved form choice: ${name} = ${value}`, formData);
+}
+
 // Initialize form
 async function initForm(skipAuthCheck = false) {
     setupNavigation();
+    
+    // Add listeners for radio button changes
+    ['designColor', 'designStyle', 'shirtColor'].forEach(name => {
+        document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+            radio.addEventListener('change', (e) => saveFormChoice(name, e.target.value));
+            // If this radio is checked, save its value initially
+            if (radio.checked) {
+                saveFormChoice(name, radio.value);
+            }
+        });
+    });
     
     // Check if we're on the order form page and require authentication
     if (window.location.pathname.includes('/order') || window.location.pathname.includes('order-form.html')) {
