@@ -14,6 +14,18 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
+// Add request logging middleware
+app.use((req, res, next) => {
+    console.log(`🌐 ${new Date().toISOString()} - ${req.method} ${req.url}`);
+    console.log('📍 Origin:', req.get('Origin') || 'No Origin header');
+    console.log('🔗 Referer:', req.get('Referer') || 'No Referer header');
+    console.log('🌍 User-Agent:', req.get('User-Agent') || 'No User-Agent header');
+    if (req.body && Object.keys(req.body).length > 0) {
+        console.log('📦 Request body keys:', Object.keys(req.body));
+    }
+    next();
+});
+
 // Set Content Security Policy to allow Firebase
 app.use((req, res, next) => {
     res.setHeader(

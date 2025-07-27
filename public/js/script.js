@@ -12,32 +12,55 @@ let formData = {};
 
 // Get API base URL based on environment
 function getAPIBaseURL() {
-    console.log('🔍 Checking API base URL...');
+    console.log('🔍 === getAPIBaseURL function called ===');
     console.log('🌐 Current hostname:', window.location.hostname);
     console.log('🌐 Current origin:', window.location.origin);
+    console.log('🌐 Current protocol:', window.location.protocol);
+    console.log('🌐 Current port:', window.location.port);
+    console.log('🌐 Full location object:', window.location);
     
     // Check for manual localhost override in localStorage
-    const forceLocalhost = localStorage.getItem('force-localhost') === 'true';
-    if (forceLocalhost) {
+    const forceLocalhost = localStorage.getItem('force-localhost');
+    console.log('🔧 localStorage force-localhost value:', forceLocalhost);
+    if (forceLocalhost === 'true') {
         console.log('🔧 Force localhost mode active - using localhost API');
         return 'http://localhost:3000';
     }
     
-    // If development mode is active, always use localhost
-    if (typeof isDevelopmentMode === 'function' && isDevelopmentMode()) {
-        console.log('🔧 Development mode active - using localhost API');
+    // Check for development mode override
+    const devMode = localStorage.getItem('development-mode');
+    console.log('🔧 localStorage development-mode value:', devMode);
+    if (devMode === 'true') {
+        console.log('🔧 Development mode override - using localhost API');
         return 'http://localhost:3000';
     }
     
+    // If development mode is active, always use localhost
+    console.log('🔧 Checking isDevelopmentMode function...');
+    if (typeof isDevelopmentMode === 'function') {
+        const devModeResult = isDevelopmentMode();
+        console.log('🔧 isDevelopmentMode() result:', devModeResult);
+        if (devModeResult) {
+            console.log('🔧 Development mode active - using localhost API');
+            return 'http://localhost:3000';
+        }
+    } else {
+        console.log('⚠️ isDevelopmentMode function not available');
+    }
+    
     // Check if we're running locally
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    console.log('🏠 Is localhost check:', isLocalhost);
+    if (isLocalhost) {
         console.log('✅ Local environment detected - using localhost:3000');
         return 'http://localhost:3000';
     }
     
     // For production on Render (or any other domain)
-    console.log('🚀 Production environment detected - using origin:', window.location.origin);
-    return window.location.origin;
+    const productionURL = window.location.origin;
+    console.log('🚀 Production environment detected - using origin:', productionURL);
+    console.log('🔍 === getAPIBaseURL returning ===:', productionURL);
+    return productionURL;
 }
 
 // Load auth modal templates
@@ -612,6 +635,18 @@ function selectDesign(element) {
 // AI design generation
 async function generateDesign() {
     console.log('🎨 generateDesign function called');
+    console.log('🌍 Current window.location:', window.location);
+    console.log('🔗 Current URL details:', {
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        port: window.location.port,
+        pathname: window.location.pathname,
+        origin: window.location.origin
+    });
+    
+    // Test API base URL function
+    const apiBaseURL = getAPIBaseURL();
+    console.log('🎯 API Base URL from function:', apiBaseURL);
     
     // Check usage limits before generating
     try {
@@ -697,7 +732,17 @@ async function generateDesign() {
             console.log('📤 Request body:', requestBody);
             
             const apiURL = `${getAPIBaseURL()}/api/generate-design`;
-            console.log('🌐 API URL:', apiURL);
+            console.log('🌐 Final API URL for request:', apiURL);
+            console.log('📤 Full request details:', {
+                url: apiURL,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            console.log('🚀 Making fetch request to:', apiURL);
             
             const response = await fetch(apiURL, {
                 method: 'POST',
@@ -707,8 +752,13 @@ async function generateDesign() {
                 body: JSON.stringify(requestBody)
             });
 
-            console.log('📡 Response status:', response.status);
-            console.log('📡 Response ok:', response.ok);
+            console.log('📡 Response received:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok,
+                url: response.url,
+                headers: Object.fromEntries(response.headers.entries())
+            });
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -758,6 +808,20 @@ async function generateDesign() {
 
 // Generate back design based on description
 async function generateBackDesign() {
+    console.log('🎨 === generateBackDesign function called ===');
+    console.log('🌍 Current window.location:', window.location);
+    console.log('🔗 Current URL details:', {
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        port: window.location.port,
+        pathname: window.location.pathname,
+        origin: window.location.origin
+    });
+    
+    // Test API base URL function
+    const apiBaseURL = getAPIBaseURL();
+    console.log('🎯 API Base URL from function:', apiBaseURL);
+    
     // Check usage limits before generating
     try {
         const { checkUsageLimit, recordUsage } = await import('./usage-tracker.js');
@@ -824,7 +888,17 @@ async function generateBackDesign() {
             console.log('📤 Request body for back design:', requestBody);
             
             const apiURL = `${getAPIBaseURL()}/api/generate-design`;
-            console.log('🌐 API URL:', apiURL);
+            console.log('🌐 Back design API URL:', apiURL);
+            console.log('📤 Back design request details:', {
+                url: apiURL,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            console.log('🚀 Making back design fetch request to:', apiURL);
             
             const response = await fetch(apiURL, {
                 method: 'POST',
@@ -834,8 +908,13 @@ async function generateBackDesign() {
                 body: JSON.stringify(requestBody)
             });
 
-            console.log('📡 Back design response status:', response.status);
-            console.log('📡 Back design response ok:', response.ok);
+            console.log('📡 Back design response received:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok,
+                url: response.url,
+                headers: Object.fromEntries(response.headers.entries())
+            });
 
             if (!response.ok) {
                 const errorText = await response.text();
