@@ -581,12 +581,15 @@ function selectDesign(element) {
 
 // AI design generation
 async function generateDesign() {
+    console.log('🎨 generateDesign function called');
+    
     // Check usage limits before generating
     try {
         const { checkUsageLimit, recordUsage } = await import('./usage-tracker.js');
         
         const canGenerate = await checkUsageLimit();
         if (!canGenerate) {
+            console.log('❌ Usage limit reached');
             return; // Error message already shown by checkUsageLimit
         }
     } catch (error) {
@@ -597,7 +600,10 @@ async function generateDesign() {
     
     // No need to check authentication here since form is blocked for guests
     const prompt = document.getElementById('designPrompt').value.trim();
+    console.log('📝 Prompt from form:', prompt);
+    
     if (!prompt) {
+        console.log('❌ No prompt provided');
         showWarningNotification('אנא הכנס תיאור לעיצוב המבוקש');
         return;
     }
@@ -614,7 +620,10 @@ async function generateDesign() {
         }
         
         // Check if in development mode
-        if (isDevelopmentMode()) {
+        const devMode = isDevelopmentMode();
+        console.log('🔧 Development mode:', devMode);
+        
+        if (devMode) {
             // Log API call in development mode
             logAPICall('generateDesign', { prompt });
             
@@ -641,29 +650,50 @@ async function generateDesign() {
             `;
         } else {
             // Real AI generation
+            console.log('🚀 Starting real AI generation for front design');
+            console.log('📝 Prompt:', prompt);
+            console.log('🎯 Event type element:', document.getElementById('eventType'));
+            
+            // Get event type from form
+            const eventTypeElement = document.querySelector('input[name="eventType"]:checked');
+            const eventType = eventTypeElement ? eventTypeElement.value : 'general';
+            console.log('🎪 Event type:', eventType);
+            
+            const requestBody = {
+                eventType: eventType,
+                description: prompt,
+                designType: 'front'
+            };
+            console.log('📤 Request body:', requestBody);
+            
             const response = await fetch('/api/generate-design', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    eventType: document.getElementById('eventType').value,
-                    description: prompt,
-                    designType: 'front'
-                })
+                body: JSON.stringify(requestBody)
             });
 
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response ok:', response.ok);
+
             if (!response.ok) {
-                throw new Error(`API call failed: ${response.status}`);
+                const errorText = await response.text();
+                console.error('❌ API call failed:', response.status, errorText);
+                throw new Error(`API call failed: ${response.status} - ${errorText}`);
             }
 
             const data = await response.json();
+            console.log('📦 Response data:', data);
             
             if (data.success && data.design) {
+                console.log('✅ Design generated successfully');
+                console.log('🖼️ Image URL:', data.design.imageUrl);
+                
                 // Display the generated design
                 document.getElementById('generated-designs').innerHTML = `
                     <div class="design-option" onclick="selectDesign(this)">
-                        <img src="${data.design.imageUrl}" alt="עיצוב AI מותאם אישית">
+                        <img src="${data.design.imageUrl}" alt="עיצוב AI מותאם אישית" onerror="console.error('❌ Failed to load image:', this.src)">
                         <p>עיצוב מותאם אישית</p>
                     </div>
                 `;
