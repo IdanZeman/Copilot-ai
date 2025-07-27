@@ -108,8 +108,9 @@ async function generateDesign(eventType, description, designType) {
         
         const imageResult = await generateImageWithDallE(prompt, {
             model: "dall-e-3",
+            width: 1024,
+            height: 1024,
             quality: "standard"
-            // Size will be automatically set to 1024x1024 for DALL-E-3
         });
 
         console.log('✅ Design generation completed successfully');
