@@ -16,6 +16,13 @@ function getAPIBaseURL() {
     console.log('🌐 Current hostname:', window.location.hostname);
     console.log('🌐 Current origin:', window.location.origin);
     
+    // Check for manual localhost override in localStorage
+    const forceLocalhost = localStorage.getItem('force-localhost') === 'true';
+    if (forceLocalhost) {
+        console.log('🔧 Force localhost mode active - using localhost API');
+        return 'http://localhost:3000';
+    }
+    
     // If development mode is active, always use localhost
     if (typeof isDevelopmentMode === 'function' && isDevelopmentMode()) {
         console.log('🔧 Development mode active - using localhost API');
