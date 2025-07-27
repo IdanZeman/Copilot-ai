@@ -771,12 +771,17 @@ async function generateDesign() {
             
             if (data.success && data.design) {
                 console.log('✅ Design generated successfully');
-                console.log('🖼️ Image URL:', data.design.imageUrl);
+                console.log('🖼️ Image data received:', !!data.design.imageData);
+                
+                // Convert base64 to data URL
+                const imgData = data.design.imageData;
+                const src = imgData.startsWith("data:") ? imgData 
+                                                        : `data:image/png;base64,${imgData}`;
                 
                 // Display the generated design
                 document.getElementById('generated-designs').innerHTML = `
                     <div class="design-option" onclick="selectDesign(this)">
-                        <img src="${data.design.imageUrl}" alt="עיצוב AI מותאם אישית" onerror="console.error('❌ Failed to load image:', this.src)">
+                        <img src="${src}" alt="עיצוב AI מותאם אישית" onerror="console.error('❌ Failed to load image:', this.src)">
                         <p>עיצוב מותאם אישית</p>
                     </div>
                 `;
@@ -927,11 +932,16 @@ async function generateBackDesign() {
             
             if (data.success && data.design) {
                 console.log('✅ Back design generated successfully');
-                console.log('🖼️ Back design image URL:', data.design.imageUrl);
+                console.log('🖼️ Back design image data received:', !!data.design.imageData);
+                
+                // Convert base64 to data URL
+                const imgData = data.design.imageData;
+                const src = imgData.startsWith("data:") ? imgData 
+                                                        : `data:image/png;base64,${imgData}`;
                 
                 // Show the generated design
                 const designImage = document.getElementById('designImage');
-                designImage.src = data.design.imageUrl;
+                designImage.src = src;
                 designImage.alt = 'עיצוב AI לחלק האחורי';
                 designImage.setAttribute('data-design-generated', 'true');
                 designImage.onerror = function() {
@@ -1067,15 +1077,20 @@ async function improveDesign() {
         
         const data = await response.json();
         
-        if (data.success && data.imageUrl) {
+        if (data.success && data.design && data.design.imageData) {
+            // Convert base64 to data URL
+            const imgData = data.design.imageData;
+            const src = imgData.startsWith("data:") ? imgData 
+                                                    : `data:image/png;base64,${imgData}`;
+            
             // Update the design image with improved version
-            designImage.src = data.imageUrl;
+            designImage.src = src;
             designImage.setAttribute('data-design-generated', 'true');
             
             // Update back preview if exists
             const backPreviewImage = document.getElementById('backPreviewImage');
             if (backPreviewImage) {
-                backPreviewImage.src = data.imageUrl;
+                backPreviewImage.src = src;
             }
             
             // Record usage

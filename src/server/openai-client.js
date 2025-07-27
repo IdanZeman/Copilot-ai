@@ -45,6 +45,7 @@ async function generateImageWithDallE(prompt, options = {}) {
             n: 1,
             size: size,
             quality: quality,
+            response_format: "b64_json",
         }),
     });
 
@@ -57,7 +58,7 @@ async function generateImageWithDallE(prompt, options = {}) {
     const data = await response.json();
     console.log('✅ DALL-E image generated successfully');
     return {
-        url: data.data[0].url,
+        imageData: data.data[0].b64_json,
         revisedPrompt: data.data[0].revised_prompt || prompt
     };
 }
@@ -115,7 +116,7 @@ async function generateDesign(eventType, description, designType) {
 
         console.log('✅ Design generation completed successfully');
         return {
-            imageUrl: imageResult.url,
+            imageData: imageResult.imageData,
             prompt: prompt,
             revisedPrompt: imageResult.revisedPrompt
         };
