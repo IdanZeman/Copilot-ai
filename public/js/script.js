@@ -1025,6 +1025,10 @@ async function improveDesign() {
         return;
     }
     
+    // Get the improve button outside try block
+    const improveBtn = document.getElementById('improveDesignBtn');
+    const originalText = improveBtn.textContent;
+    
     try {
         // Check usage limits
         if (window.UsageTracker) {
@@ -1034,17 +1038,24 @@ async function improveDesign() {
             }
         }
         
-        // Show loading
-        const improveBtn = document.getElementById('improveDesignBtn');
-        const originalText = improveBtn.textContent;
+        // Show loading state
         improveBtn.disabled = true;
         improveBtn.textContent = 'משפר עיצוב...';
         
-        // Get original design details
+        // Get original design details with validation
         const designPrompt = document.getElementById('designPrompt').value;
-        const designColor = document.querySelector('input[name="designColor"]:checked').value;
-        const designStyle = document.querySelector('input[name="designStyle"]:checked').value;
-        const shirtColor = document.querySelector('input[name="shirtColor"]:checked').value;
+        const designColorInput = document.querySelector('input[name="designColor"]:checked');
+        const designStyleInput = document.querySelector('input[name="designStyle"]:checked');
+        const shirtColorInput = document.querySelector('input[name="shirtColor"]:checked');
+        
+        // Validate all required inputs exist
+        if (!designColorInput || !designStyleInput || !shirtColorInput) {
+            throw new Error('אנא בחר את כל האפשרויות הנדרשות (צבע עיצוב, סגנון וצבע חולצה)');
+        }
+        
+        const designColor = designColorInput.value;
+        const designStyle = designStyleInput.value;
+        const shirtColor = shirtColorInput.value;
         
         // Prepare improvement request
         const improvedPrompt = `שפר את העיצוב הבא:
@@ -1057,8 +1068,8 @@ async function improveDesign() {
         
         אנא צור עיצוב משופר שלוקח בחשבון את ההנחיות לשיפור תוך שמירה על האלמנטים החיוביים של העיצוב המקורי.`;
         
-        // Make API call
-        const response = await fetch('/.netlify/functions/generate-design', {
+        // Make API call to new endpoint
+        const response = await fetch(`${getAPIBaseURL()}/api/improve-design`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1072,32 +1083,48 @@ async function improveDesign() {
         });
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`שגיאת שרת: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
         
-        if (data.success && data.design && data.design.imageData) {
-            // Convert base64 to data URL
-            const imgData = data.design.imageData;
-            const src = imgData.startsWith("data:") ? imgData 
-                                                    : `data:image/png;base64,${imgData}`;
-            
-            // Update the design image with improved version
-            designImage.src = src;
-            designImage.setAttribute('data-design-generated', 'true');
-            
-            // Update back preview if exists
-            const backPreviewImage = document.getElementById('backPreviewImage');
-            if (backPreviewImage) {
-                backPreviewImage.src = src;
-            }
-            
-            // Record usage
-            if (window.UsageTracker) {
-                await window.UsageTracker.recordUsage();
-            }
-            
+        if (!data.success || !data.design || !data.design.imageData) {
+            throw new Error('תגובת השרת לא הכילה עיצוב תקין');
+        }
+        
+        // Convert base64 to data URL
+        const imgData = data.design.imageData;
+        const src = imgData.startsWith("data:") ? imgData 
+                                               : `data:image/png;base64,${imgData}`;
+        
+        // Update the design image with improved version
+        designImage.src = src;
+        designImage.setAttribute('data-design-generated', 'true');
+        
+        // Update back preview if exists
+        const backPreviewImage = document.getElementById('backPreviewImage');
+        if (backPreviewImage) {
+            backPreviewImage.src = src;
+        }
+        
+        // Record usage
+        if (window.UsageTracker) {
+            await window.UsageTracker.recordUsage();
+        }
+        
+        showSuccessNotification('העיצוב שופר בהצלחה', 'העיצוב המשופר מוצג על החולצה');
+        
+    } catch (error) {
+        console.error('❌ Error improving design:', error);
+        showErrorNotification('שגיאה בשיפור העיצוב', error.message || 'אירעה שגיאה בלתי צפויה');
+    } finally {
+        // Always restore button state
+        if (improveBtn) {
+            improveBtn.disabled = false;
+            improveBtn.textContent = originalText;
+        }
+    }
             // Clear improvement prompt
             improvementPrompt.value = '';
             
