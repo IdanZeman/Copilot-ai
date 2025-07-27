@@ -640,8 +640,36 @@ async function generateDesign() {
                 </div>
             `;
         } else {
-            // Real AI generation would go here
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Real AI generation
+            const response = await fetch('/api/generate-design', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    eventType: document.getElementById('eventType').value,
+                    description: prompt,
+                    designType: 'front'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API call failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.success && data.design) {
+                // Display the generated design
+                document.getElementById('generated-designs').innerHTML = `
+                    <div class="design-option" onclick="selectDesign(this)">
+                        <img src="${data.design.imageUrl}" alt="עיצוב AI מותאם אישית">
+                        <p>עיצוב מותאם אישית</p>
+                    </div>
+                `;
+            } else {
+                throw new Error('Failed to generate design');
+            }
         }
         
         // Show generated designs
