@@ -57,3 +57,26 @@ NODE_ENV = production
 ✅ קל להגדרה
 
 ## הפרויקט מוכן לפרסום! 🚀
+
+### מדריך מהיר להעלאה:
+
+1. **התחבר ל-Render**: [render.com](https://render.com)
+2. **צור Web Service חדש** עם ההגדרות הבאות:
+   - Repository: `IdanZeman/Copilot-ai`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+3. **הוסף משתני סביבה**:
+   - `OPENAI_API_KEY` = המפתח שלך מ-OpenAI
+   - `NODE_ENV` = `production`
+4. **פרסם** - Render יעשה build אוטומטי
+
+### מה שונה ב-production:
+- ✅ API URLs מתכווננים אוטומטית לסביבה
+- ✅ השרת משרת קבצים סטטיים מתיקיית `public`
+- ✅ CORS מוגדר בצורה נכונה
+- ✅ כל הקריאות ל-AI עוברות דרך השרת
+
+### בדיקה לאחר הפרסום:
+1. בדוק שהעמוד נטען: `https://your-app.onrender.com`
+2. נסה ליצור עיצוב חדש בטופס
+3. ודא שהקריאות ל-OpenAI עובדות
