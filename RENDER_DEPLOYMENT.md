@@ -32,6 +32,11 @@ PORT = 10000
 NODE_ENV = production
 ```
 
+**חשוב**: 
+- השתמש במפתח OpenAI האמיתי שלך
+- Render משתמש בפורט 10000 כברירת מחדל
+- NODE_ENV=production יגרום לאפליקציה לעבוד במצב production
+
 #### ד. פרסום
 לחץ "Create Web Service" והמתן לפרסום.
 

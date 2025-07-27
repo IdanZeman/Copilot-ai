@@ -10,6 +10,16 @@ const totalSteps = 5; // Total number of steps in the form
 let selectedDesign = null;
 let formData = {};
 
+// Get API base URL based on environment
+function getAPIBaseURL() {
+    // Check if we're running locally
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    // For production on Render (or any other domain)
+    return window.location.origin;
+}
+
 // Load auth modal templates
 async function loadAuthModals() {
     try {
@@ -666,7 +676,7 @@ async function generateDesign() {
             };
             console.log('📤 Request body:', requestBody);
             
-            const response = await fetch('/api/generate-design', {
+            const response = await fetch(`${getAPIBaseURL()}/api/generate-design`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -790,7 +800,7 @@ async function generateBackDesign() {
             };
             console.log('📤 Request body for back design:', requestBody);
             
-            const response = await fetch('/api/generate-design', {
+            const response = await fetch(`${getAPIBaseURL()}/api/generate-design`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
