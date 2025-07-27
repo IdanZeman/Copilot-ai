@@ -1124,29 +1124,16 @@ async function improveDesign() {
             improveBtn.disabled = false;
             improveBtn.textContent = originalText;
         }
-    }
-            // Clear improvement prompt
+        
+        // Clear improvement prompt
+        if (improvementPrompt) {
             improvementPrompt.value = '';
-            
-            // Update usage badge
-            if (window.updateUsageBadge) {
-                window.updateUsageBadge();
-            }
-            
-            showSimpleSuccessNotification('העיצוב שופר בהצלחה!');
-            
-        } else {
-            throw new Error(data.error || 'Failed to improve design');
         }
         
-    } catch (error) {
-        console.error('Error improving design:', error);
-        showErrorNotification('שגיאה', 'אירעה שגיאה בשיפור העיצוב. אנא נסה שוב מאוחר יותר.');
-    } finally {
-        // Restore button
-        const improveBtn = document.getElementById('improveDesignBtn');
-        improveBtn.disabled = false;
-        improveBtn.textContent = originalText;
+        // Update usage badge
+        if (window.updateUsageBadge) {
+            window.updateUsageBadge();
+        }
     }
 }
 
