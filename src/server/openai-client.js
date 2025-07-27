@@ -19,7 +19,19 @@ async function generateTShirtDesignPrompt(data, options = {}) {
 
 // Helper function to generate image with DALL-E
 async function generateImageWithDallE(prompt, options = {}) {
-    const { width = 512, height = 512, model = "dall-e-3", quality = "standard" } = options;
+    const { width = 1024, height = 1024, model = "dall-e-3", quality = "standard" } = options;
+    
+    // DALL-E-3 only supports specific sizes
+    let size;
+    if (model === "dall-e-3") {
+        // DALL-E-3 supported sizes: 1024x1024, 1792x1024, 1024x1792
+        size = "1024x1024"; // Always use square format for t-shirt designs
+    } else {
+        // DALL-E-2 supports: 256x256, 512x512, 1024x1024
+        size = `${width}x${height}`;
+    }
+    
+    console.log('🎨 Generating image with DALL-E:', { model, size, quality });
     
     const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
@@ -31,16 +43,19 @@ async function generateImageWithDallE(prompt, options = {}) {
             model: model,
             prompt: prompt,
             n: 1,
-            size: `${width}x${height}`,
+            size: size,
             quality: quality,
         }),
     });
 
     if (!response.ok) {
-        throw new Error(`DALL-E API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ DALL-E API error:', response.status, errorText);
+        throw new Error(`DALL-E API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('✅ DALL-E image generated successfully');
     return {
         url: data.data[0].url,
         revisedPrompt: data.data[0].revised_prompt || prompt
@@ -82,25 +97,36 @@ async function translateWithChatGPT(text) {
 
 async function generateDesign(eventType, description, designType) {
     try {
+        console.log('🚀 Starting design generation:', { eventType, description, designType });
+        
         // Implementation moved from ai-prompt-generator.js
         const prompt = await generateTShirtDesignPrompt({ eventType, description }, { 
             isBackDesign: designType === 'back' 
         });
         
+        console.log('📝 Generated prompt:', prompt);
+        
         const imageResult = await generateImageWithDallE(prompt, {
-            width: 512,
-            height: 512,
             model: "dall-e-3",
             quality: "standard"
+            // Size will be automatically set to 1024x1024 for DALL-E-3
         });
 
+        console.log('✅ Design generation completed successfully');
         return {
             imageUrl: imageResult.url,
             prompt: prompt,
             revisedPrompt: imageResult.revisedPrompt
         };
     } catch (error) {
-        console.error('OpenAI generation error:', error);
+        console.error('❌ OpenAI generation error:', error);
+        console.error('📊 Error details:', {
+            message: error.message,
+            stack: error.stack,
+            eventType,
+            description,
+            designType
+        });
         throw new Error('Failed to generate design');
     }
 }

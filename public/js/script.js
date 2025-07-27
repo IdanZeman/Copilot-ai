@@ -27,6 +27,12 @@ function getAPIBaseURL() {
         return 'http://localhost:3000';
     }
     
+    // DEVELOPMENT: Auto-force localhost for old Render domain
+    if (window.location.hostname === 'copilot-ai-qni6.onrender.com') {
+        console.log('🔧 Old Render domain detected - auto-switching to localhost for development');
+        return 'http://localhost:3000';
+    }
+    
     // Check for development mode override
     const devMode = localStorage.getItem('development-mode');
     console.log('🔧 localStorage development-mode value:', devMode);
