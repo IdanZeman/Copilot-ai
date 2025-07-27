@@ -1107,7 +1107,7 @@ async function improveDesign() {
             await window.UsageTracker.recordUsage();
         }
         
-        showSuccessNotification('העיצוב שופר בהצלחה', 'העיצוב המשופר מוצג על החולצה');
+        showSimpleSuccessNotification('העיצוב שופר בהצלחה');
         
     } catch (error) {
         console.error('❌ Error improving design:', error);
