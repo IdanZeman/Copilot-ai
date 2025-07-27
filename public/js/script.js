@@ -667,6 +667,20 @@ async function generateDesign() {
     const prompt = document.getElementById('designPrompt').value.trim();
     console.log('📝 Prompt from form:', prompt);
     
+    // Save the description in formData
+    formData.description = prompt;
+    
+    // Get and save design preferences
+    const designColorInput = document.querySelector('input[name="designColor"]:checked');
+    const designStyleInput = document.querySelector('input[name="designStyle"]:checked');
+    const shirtColorInput = document.querySelector('input[name="shirtColor"]:checked');
+    const eventTypeInput = document.querySelector('input[name="eventType"]:checked');
+    
+    if (designColorInput) formData.designColor = designColorInput.value;
+    if (designStyleInput) formData.designStyle = designStyleInput.value;
+    if (shirtColorInput) formData.shirtColor = shirtColorInput.value;
+    if (eventTypeInput) formData.eventType = eventTypeInput.value;
+    
     if (!prompt) {
         console.log('❌ No prompt provided');
         showWarningNotification('אנא הכנס תיאור לעיצוב המבוקש');
@@ -1011,10 +1025,12 @@ async function improveDesign() {
         return;
     }
     
-    // Check if a design exists
+    // Check if a design exists and was generated
     const designImage = document.getElementById('designImage');
-    if (!designImage || !designImage.src || designImage.src.includes('placeholder')) {
-        showErrorNotification('שגיאה', 'יש ליצור עיצוב לפני שליפור');
+    if (!designImage || !designImage.src || 
+        !designImage.getAttribute('data-design-generated') || 
+        designImage.src.includes('placeholder')) {
+        showErrorNotification('שגיאה', 'יש ליצור עיצוב לפני שיפור');
         return;
     }
     
@@ -1042,43 +1058,26 @@ async function improveDesign() {
         improveBtn.disabled = true;
         improveBtn.textContent = 'משפר עיצוב...';
         
-        // Get original design details with validation
-        const designPrompt = document.getElementById('designPrompt').value;
-        const designColorInput = document.querySelector('input[name="designColor"]:checked');
-        const designStyleInput = document.querySelector('input[name="designStyle"]:checked');
-        const shirtColorInput = document.querySelector('input[name="shirtColor"]:checked');
-        
-        // Validate all required inputs exist
-        if (!designColorInput || !designStyleInput || !shirtColorInput) {
-            throw new Error('אנא בחר את כל האפשרויות הנדרשות (צבע עיצוב, סגנון וצבע חולצה)');
+        // Validate that we have all required data
+        if (!formData.description || !formData.designColor || 
+            !formData.designStyle || !formData.shirtColor) {
+            throw new Error('חסרים פרטי עיצוב נדרשים. אנא מלא את כל השדות בטופס.');
         }
         
-        const designColor = designColorInput.value;
-        const designStyle = designStyleInput.value;
-        const shirtColor = shirtColorInput.value;
-        
         // Prepare improvement request
-        const improvedPrompt = `שפר את העיצוב הבא:
-        עיצוב מקורי: ${designPrompt}
-        צבע עיצוב: ${designColor}
-        סגנון עיצוב: ${designStyle}
-        צבע חולצה: ${shirtColor}
-        
-        הנחיות לשיפור: ${improvementPrompt.value.trim()}
-        
-        אנא צור עיצוב משופר שלוקח בחשבון את ההנחיות לשיפור תוך שמירה על האלמנטים החיוביים של העיצוב המקורי.`;
-        
-        // Make API call to new endpoint
         const response = await fetch(`${getAPIBaseURL()}/api/improve-design`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                prompt: improvedPrompt,
-                color: designColor,
-                style: designStyle,
-                shirtColor: shirtColor
+                originalPrompt: formData.description,
+                prompt: improvementPrompt.value.trim(),
+                eventType: formData.eventType || 'general',
+                designType: formData.designType || 'front',
+                designColor: formData.designColor,
+                designStyle: formData.designStyle,
+                shirtColor: formData.shirtColor
             })
         });
         
@@ -1168,6 +1167,11 @@ function checkColorContrast() {
     ];
     
     const combination = [shirtColor.value, designColor.value];
+    
+    // Save values to formData
+    formData.shirtColor = shirtColor.value;
+    formData.designColor = designColor.value;
+    
     const hasPoorContrast = poorContrast.some(pair => 
         (pair[0] === combination[0] && pair[1] === combination[1]) ||
         (pair[1] === combination[0] && pair[0] === combination[1])

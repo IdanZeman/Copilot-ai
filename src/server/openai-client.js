@@ -133,18 +133,48 @@ async function generateDesign(eventType, description, designType) {
     }
 }
 
-async function improveDesign(designHistory, improvementFeedback) {
+async function improveDesign(eventType, originalPrompt, improvementFeedback, options = {}) {
     try {
-        // Implementation moved from ai-prompt-generator.js
+        console.log('🚀 Starting design improvement:', { eventType, improvementFeedback });
+        
+        // Translate feedback if needed
         const translatedFeedback = await translateWithChatGPT(improvementFeedback);
+        console.log('📝 Translated feedback:', translatedFeedback);
         
-        // Rest of the improve design logic...
+        // Create improved prompt
+        const improvedPrompt = `שפר את העיצוב הבא:
+        עיצוב מקורי: ${originalPrompt}
         
+        הנחיות לשיפור: ${translatedFeedback}
+        
+        חשוב: שמור על הכללים המקוריים - איור בשחור-לבן בלבד, קווי מתאר פשוטים ונקיים,
+        רקע חייב להיות לבן לגמרי, והאיור כולו בשחור בלבד ללא הצללות.
+        שמור על סגנון קומיקסי/קריקטוריסטי עם קווים ברורים המתאימים להדפסה.`;
+        
+        console.log('📝 Generated improved prompt:', improvedPrompt);
+        
+        // Generate new image with same settings as original
+        const imageResult = await generateImageWithDallE(improvedPrompt, {
+            model: "dall-e-3",
+            width: 1024,
+            height: 1024,
+            quality: "standard",
+            ...options
+        });
+
+        console.log('✅ Improved design generated successfully');
         return {
-            // improved design details
+            imageData: imageResult.imageData,
+            revisedPrompt: imageResult.revisedPrompt
         };
     } catch (error) {
-        console.error('OpenAI improvement error:', error);
+        console.error('❌ OpenAI improvement error:', error);
+        console.error('📊 Error details:', {
+            message: error.message,
+            stack: error.stack,
+            eventType,
+            improvementFeedback
+        });
         throw new Error('Failed to improve design');
     }
 }

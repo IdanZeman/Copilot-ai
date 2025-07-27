@@ -57,18 +57,38 @@ router.post('/generate-design', async (req, res) => {
 });
 
 router.post('/improve-design', async (req, res) => {
+    console.log('🚀 === SERVER: /api/improve-design endpoint called ===');
+    console.log('📥 Request body:', req.body);
+    
     try {
-        const { designHistory, feedback } = req.body;
+        const { prompt, eventType, designType, originalPrompt } = req.body;
+        
+        // Validate required fields
+        if (!prompt) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Missing required field: prompt' 
+            });
+        }
         
         // Call OpenAI API securely from server
-        const improvedDesign = await improveDesign(designHistory, feedback);
+        console.log('🤖 Calling improveDesign function...');
+        const design = await improveDesign(eventType, originalPrompt, prompt, {
+            // Pass any additional options if needed
+        });
+        console.log('✅ Design improved successfully');
         
-        res.json({ success: true, design: improvedDesign });
+        res.json({ success: true, design });
     } catch (error) {
-        console.error('Design improvement error:', error);
+        console.error('❌ Design improvement error:', error);
+        console.error('📊 Full error details:', {
+            message: error.message,
+            stack: error.stack,
+            requestBody: req.body
+        });
         res.status(500).json({ 
             success: false, 
-            error: 'Failed to improve design' 
+            error: error.message || 'Failed to improve design' 
         });
     }
 });
