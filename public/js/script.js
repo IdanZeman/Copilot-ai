@@ -774,12 +774,57 @@ async function generateBackDesign() {
             designImage.src = mockResponse.image;
             designImage.alt = `${mockResponse.description} (מצב פיתוח)`;
         } else {
-            // Real AI generation would go here
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Real AI generation for back design
+            console.log('🚀 Starting real AI generation for back design');
+            console.log('📝 Description:', description);
             
-            // For demo purposes, show a placeholder design
-            const designImage = document.getElementById('designImage');
-            designImage.src = 'https://via.placeholder.com/300x300/4a90e2/ffffff?text=AI+Generated+Design';
+            // Get event type from form
+            const eventTypeElement = document.querySelector('input[name="eventType"]:checked');
+            const eventType = eventTypeElement ? eventTypeElement.value : 'general';
+            console.log('🎪 Event type:', eventType);
+            
+            const requestBody = {
+                eventType: eventType,
+                description: description,
+                designType: 'back'
+            };
+            console.log('📤 Request body for back design:', requestBody);
+            
+            const response = await fetch('/api/generate-design', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            console.log('📡 Back design response status:', response.status);
+            console.log('📡 Back design response ok:', response.ok);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Back design API call failed:', response.status, errorText);
+                throw new Error(`API call failed: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('📦 Back design response data:', data);
+            
+            if (data.success && data.design) {
+                console.log('✅ Back design generated successfully');
+                console.log('🖼️ Back design image URL:', data.design.imageUrl);
+                
+                // Show the generated design
+                const designImage = document.getElementById('designImage');
+                designImage.src = data.design.imageUrl;
+                designImage.alt = 'עיצוב AI לחלק האחורי';
+                designImage.setAttribute('data-design-generated', 'true');
+                designImage.onerror = function() {
+                    console.error('❌ Failed to load back design image:', this.src);
+                };
+            } else {
+                throw new Error('Failed to generate back design');
+            }
         }
         
         // Show the generated design
