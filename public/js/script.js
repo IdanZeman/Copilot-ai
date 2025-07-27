@@ -12,11 +12,24 @@ let formData = {};
 
 // Get API base URL based on environment
 function getAPIBaseURL() {
-    // Check if we're running locally
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    console.log('🔍 Checking API base URL...');
+    console.log('🌐 Current hostname:', window.location.hostname);
+    console.log('🌐 Current origin:', window.location.origin);
+    
+    // If development mode is active, always use localhost
+    if (typeof isDevelopmentMode === 'function' && isDevelopmentMode()) {
+        console.log('🔧 Development mode active - using localhost API');
         return 'http://localhost:3000';
     }
+    
+    // Check if we're running locally
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('✅ Local environment detected - using localhost:3000');
+        return 'http://localhost:3000';
+    }
+    
     // For production on Render (or any other domain)
+    console.log('🚀 Production environment detected - using origin:', window.location.origin);
     return window.location.origin;
 }
 
