@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/styles-orders.css">
     <link rel="stylesheet" href="../css/styles-user-menu.css">
     <link rel="stylesheet" href="../css/styles-auth.css">
+    <link rel="stylesheet" href="../css/modal.css">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -78,15 +79,15 @@
     <!-- Order Details Modal -->
     <div class="modal" id="orderModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>פרטי הזמנה</h2>
+            <div class="modal-header" id="modalHeader">
+                <h3 class="modal-title">פרטי הזמנה</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
                 <!-- Order details will be loaded here -->
-                <button class="close-modal" id="closeModal" onclick="closeModal()" type="button" title="סגור חלון">
-                    <i class="fas fa-times"></i> סגור
-                </button>
             </div>
+        </div>
+    </div>
         </div>
     </div>
 

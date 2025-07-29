@@ -1,0 +1,154 @@
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    max-width: 42rem; /* max-w-2xl */
+    width: 100%;
+    position: relative;
+    margin: 2rem auto;
+}
+
+.modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.modal-close:hover {
+    color: #111827;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: calc(100vh - 10rem);
+    overflow-y: auto;
+}
+
+.modal-section {
+    margin-bottom: 2rem;
+}
+
+.modal-section:last-child {
+    margin-bottom: 0;
+}
+
+.modal-section h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.detail-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.product-details,
+.customer-details,
+.event-details {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.design-preview {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.design-preview img {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+}
+
+.size-item {
+    display: inline-block;
+    background: #f3f4f6;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    margin: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.status-pending { color: #d97706; }
+.status-processing { color: #2563eb; }
+.status-shipped { color: #059669; }
+.status-delivered { color: #047857; }
+.status-cancelled { color: #dc2626; }
+
+/* Loading state */
+.loading-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.loading-modal i {
+    font-size: 2rem;
+    color: #6b7280;
+}
+
+/* Error state */
+.error-modal {
+    text-align: center;
+    color: #dc2626;
+    padding: 2rem;
+}
+
+.error-modal i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .modal-content {
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        max-height: calc(100vh - 6rem);
+    }
+    
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -203,7 +203,8 @@ async function showOrderDetails(orderId) {
                 <p>טוען פרטי הזמנה...</p>
             </div>
         `;
-        modal.style.display = 'block';
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
 
         // Get all user orders and find the specific one
         const orders = await orderService.getUserOrders(currentUser.uid);
@@ -226,14 +227,22 @@ async function showOrderDetails(orderId) {
                 .map(([size, qty]) => `<span class="size-item">${size}: ${qty}</span>`)
                 .join(' ') : 'לא צוין';
 
+        const modalHeader = document.getElementById('modalHeader');
+        if (modalHeader) {
+            modalHeader.innerHTML = `
+                <h3 class="modal-title">פרטי הזמנה #${formattedOrder.orderNumber}</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            `;
+        }
+        
         modalBody.innerHTML = `
             <div class="modal-order-details">
                 <div class="modal-section">
                     <h4>פרטי הזמנה</h4>
                     <div class="detail-grid">
-                        <p><strong>מספר הזמנה:</strong> #${formattedOrder.orderNumber}</p>
                         <p><strong>תאריך:</strong> ${formattedOrder.date}</p>
                         <p><strong>סטטוס:</strong> <span class="${formattedOrder.statusClass}">${formattedOrder.status}</span></p>
+                        <p><strong>סכום כולל:</strong> ₪${order.totalPrice || 0}</p>
                     </div>
                 </div>
                 
@@ -241,7 +250,7 @@ async function showOrderDetails(orderId) {
                     <div class="modal-section">
                         <h4>עיצוב</h4>
                         <div class="design-preview">
-                            <img src="${order.designImage}" alt="עיצוב הזמנה" style="max-width: 200px; max-height: 200px;">
+                            <img src="${order.designImage}" alt="עיצוב הזמנה" class="preview-image">
                         </div>
                     </div>
                 ` : ''}
@@ -305,7 +314,10 @@ async function showOrderDetails(orderId) {
 // Function to close modal
 function closeModal() {
     const modal = document.getElementById('orderModal');
-    modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'visible'; // Re-enable scrolling
+    }
 }
 
 // Close modal when clicking outside
