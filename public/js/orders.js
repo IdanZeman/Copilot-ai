@@ -28,11 +28,19 @@ function formatPrice(price) {
 
 // Function to create order card
 function createOrderCard(order) {
-    const sizesDisplay = order.items[0]?.sizes ? 
-        Object.entries(order.items[0].sizes)
+    // Handle multiple items display
+    const itemsToShow = order.items || [];
+    const firstItem = itemsToShow[0] || {};
+    
+    const sizesDisplay = firstItem.sizes ? 
+        Object.entries(firstItem.sizes)
             .filter(([size, qty]) => qty > 0)
             .map(([size, qty]) => `${size}: ${qty}`)
             .join(', ') : '';
+
+    const quantityDisplay = firstItem.quantity ? `כמות: ${firstItem.quantity}` : 
+                           sizesDisplay ? `מידות: ${sizesDisplay}` : 
+                           `כמות כוללת: ${order.totalQuantity}`;
 
     return `
         <div class="order-card">
@@ -51,18 +59,22 @@ function createOrderCard(order) {
                 </div>` : ''
             }
             <div class="order-details">
-                <div class="order-item">
-                    <div class="item-info">
-                        <span class="item-name">${order.items[0]?.design || 'עיצוב מותאם אישית'}</span>
-                        <span class="item-details">
-                            צבע חולצה: ${order.items[0]?.color || 'לא צוין'}
-                            ${sizesDisplay ? ` | מידות: ${sizesDisplay}` : ''}
-                            | כמות כוללת: ${order.totalQuantity}
-                        </span>
-                        ${order.customerName ? `<span class="customer-name">לקוח: ${order.customerName}</span>` : ''}
+                ${itemsToShow.map((item, index) => `
+                    <div class="order-item">
+                        <div class="item-info">
+                            <span class="item-name">${item.design || 'עיצוב מותאם אישית'}</span>
+                            <span class="item-details">
+                                ${item.productType && item.productType !== 'tshirt' ? `סוג: ${item.productType} | ` : ''}
+                                צבע: ${item.color || 'לא צוין'}
+                                ${item.printColor ? ` | צבע הדפס: ${item.printColor}` : ''}
+                                ${index === 0 ? ` | ${quantityDisplay}` : ''}
+                            </span>
+                            ${index === 0 && order.customerName ? `<span class="customer-name">לקוח: ${order.customerName}</span>` : ''}
+                        </div>
+                        ${index === 0 ? `<div class="item-price">${order.totalPrice}</div>` : ''}
                     </div>
-                    <div class="item-price">${order.totalPrice}</div>
-                </div>
+                `).join('')}
+                ${itemsToShow.length > 1 ? `<div class="items-summary">+${itemsToShow.length - 1} פריטים נוספים</div>` : ''}
             </div>
             <div class="order-footer">
                 <div class="order-total">
@@ -129,10 +141,6 @@ async function loadOrders() {
         // Fetch orders from Firebase
         console.log('🔍 Fetching orders for user:', currentUser.uid);
         try {
-            // First, let's see all orders for debugging
-            const allOrders = await orderService.getAllOrders();
-            console.log('🔍 DEBUG: All orders in database:', allOrders);
-            
             const orders = await orderService.getUserOrders(currentUser.uid);
             console.log('📦 Retrieved orders:', orders.length, orders);
             
@@ -246,37 +254,57 @@ async function showOrderDetails(orderId) {
                     </div>
                 </div>
                 
-                ${order.designImage ? `
+                ${order.designImage || (order.orderItems && order.orderItems[0]?.designImage) ? `
                     <div class="modal-section">
                         <h4>עיצוב</h4>
                         <div class="design-preview">
-                            <img src="${order.designImage}" alt="עיצוב הזמנה" class="preview-image">
+                            <img src="${order.designImage || order.orderItems[0].designImage}" alt="עיצוב הזמנה" class="preview-image">
                         </div>
                     </div>
                 ` : ''}
                 
                 <div class="modal-section">
-                    <h4>פרטי המוצר</h4>
+                    <h4>פרטי המוצרים</h4>
                     <div class="product-details">
-                        ${order.designPrompt ? `<p><strong>תיאור עיצוב:</strong> ${order.designPrompt}</p>` : ''}
-                        <p><strong>צבע חולצה:</strong> ${order.shirtColor || 'לא צוין'}</p>
-                        <p><strong>מידות:</strong> ${sizesDisplay}</p>
-                        <p><strong>כמות כוללת:</strong> ${order.totalQuantity || 0}</p>
-                        ${order.frontText ? `<p><strong>טקסט קדמי:</strong> ${order.frontText} (${order.frontTextPosition})</p>` : ''}
-                        ${order.backText ? `<p><strong>טקסט אחורי:</strong> ${order.backText} (${order.backTextPosition})</p>` : ''}
+                        ${order.orderItems && order.orderItems.length > 0 ? 
+                            order.orderItems.map((item, index) => `
+                                <div class="product-item" ${index > 0 ? 'style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;"' : ''}>
+                                    ${item.designPrompt ? `<p><strong>תיאור עיצוב:</strong> ${item.designPrompt}</p>` : ''}
+                                    <p><strong>סוג מוצר:</strong> ${item.productType === 'tshirt' ? 'חולצה' : item.productType}</p>
+                                    <p><strong>צבע:</strong> ${item.color || 'לא צוין'}</p>
+                                    <p><strong>צבע הדפס:</strong> ${item.printColor || 'לא צוין'}</p>
+                                    ${item.sizes ? `<p><strong>מידות:</strong> ${Object.entries(item.sizes)
+                                        .filter(([size, qty]) => qty > 0)
+                                        .map(([size, qty]) => `${size}: ${qty}`)
+                                        .join(', ')}</p>` : ''}
+                                    ${item.quantity ? `<p><strong>כמות:</strong> ${item.quantity}</p>` : ''}
+                                    ${item.frontText ? `<p><strong>טקסט קדמי:</strong> ${item.frontText} (${item.frontTextPosition})</p>` : ''}
+                                    ${item.backText ? `<p><strong>טקסט אחורי:</strong> ${item.backText} (${item.backTextPosition})</p>` : ''}
+                                </div>
+                            `).join('') :
+                            // Fallback to legacy structure
+                            `<div class="product-item">
+                                ${order.designPrompt ? `<p><strong>תיאור עיצוב:</strong> ${order.designPrompt}</p>` : ''}
+                                <p><strong>צבע חולצה:</strong> ${order.shirtColor || 'לא צוין'}</p>
+                                <p><strong>מידות:</strong> ${sizesDisplay}</p>
+                                <p><strong>כמות כוללת:</strong> ${order.totalQuantity || 0}</p>
+                                ${order.frontText ? `<p><strong>טקסט קדמי:</strong> ${order.frontText} (${order.frontTextPosition})</p>` : ''}
+                                ${order.backText ? `<p><strong>טקסט אחורי:</strong> ${order.backText} (${order.backTextPosition})</p>` : ''}
+                            </div>`
+                        }
                     </div>
                 </div>
                 
                 <div class="modal-section">
                     <h4>פרטי לקוח</h4>
                     <div class="customer-details">
-                        <p><strong>שם:</strong> ${order.customerInfo?.fullName || 'לא צוין'}</p>
-                        <p><strong>טלפון:</strong> ${order.customerInfo?.phone || 'לא צוין'}</p>
-                        <p><strong>אימייל:</strong> ${order.customerInfo?.email || 'לא צוין'}</p>
-                        <p><strong>כתובת:</strong> ${order.customerInfo?.address || 'לא צוין'}</p>
-                        <p><strong>עיר:</strong> ${order.customerInfo?.city || 'לא צוין'}</p>
-                        ${order.customerInfo?.postalCode ? `<p><strong>מיקוד:</strong> ${order.customerInfo.postalCode}</p>` : ''}
-                        ${order.customerInfo?.notes ? `<p><strong>הערות:</strong> ${order.customerInfo.notes}</p>` : ''}
+                        <p><strong>שם:</strong> ${order.customerInfo?.fullName || order.payerDetails?.name || 'לא צוין'}</p>
+                        <p><strong>טלפון:</strong> ${order.customerInfo?.phone || order.payerDetails?.phone || 'לא צוין'}</p>
+                        <p><strong>אימייל:</strong> ${order.customerInfo?.email || order.payerDetails?.email || 'לא צוין'}</p>
+                        <p><strong>כתובת:</strong> ${order.customerInfo?.address || order.payerDetails?.address || 'לא צוין'}</p>
+                        <p><strong>עיר:</strong> ${order.customerInfo?.city || order.payerDetails?.city || 'לא צוין'}</p>
+                        ${(order.customerInfo?.postalCode || order.payerDetails?.postalCode) ? `<p><strong>מיקוד:</strong> ${order.customerInfo?.postalCode || order.payerDetails?.postalCode}</p>` : ''}
+                        ${(order.customerInfo?.notes || order.payerDetails?.notes) ? `<p><strong>הערות:</strong> ${order.customerInfo?.notes || order.payerDetails?.notes}</p>` : ''}
                     </div>
                 </div>
                 

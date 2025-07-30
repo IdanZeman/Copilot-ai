@@ -1,5 +1,6 @@
 import express from 'express';
 import { generateDesign, improveDesign } from './openai-client.js';
+import orderController from './order-controller.js';
 
 const router = express.Router();
 
@@ -92,5 +93,8 @@ router.post('/improve-design', async (req, res) => {
         });
     }
 });
+
+// Mount order routes
+router.use('/', orderController);
 
 export default router;

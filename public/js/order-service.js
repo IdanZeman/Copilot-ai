@@ -6,10 +6,156 @@ class OrderService {
         this.ordersCollection = 'orders';
     }
 
-    // Save order to database
+    // Get API base URL
+    getAPIBaseURL() {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return `http://localhost:${window.location.port || 8000}`;
+        }
+        return window.location.origin;
+    }
+
+    // Save order using new API structure (preferred method)
+    async saveOrderViaAPI(orderData) {
+        try {
+            console.log('💾 Saving order via API with new structure:', orderData);
+            
+            // Clean the order items before sending
+            if (orderData.orderItems && Array.isArray(orderData.orderItems)) {
+                orderData.orderItems = orderData.orderItems.map(item => this.cleanOrderItem(item));
+            }
+            
+            const response = await fetch(`${this.getAPIBaseURL()}/api/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`API call failed: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Order saved via API successfully:', result.orderId);
+                return {
+                    success: true,
+                    orderId: result.orderId,
+                    order: result.order
+                };
+            } else {
+                throw new Error(result.error || 'API returned failure');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error saving order via API:', error);
+            throw error;
+        }
+    }
+
+    // Convert legacy order data to new structure
+    convertLegacyToNewStructure(orderData) {
+        return {
+            userId: orderData.userId,
+            orderItems: [
+                this.cleanOrderItem({
+                    productType: 'tshirt',
+                    designId: orderData.selectedDesign,
+                    designImage: orderData.designImage || '',
+                    color: orderData.shirtColor || '',
+                    printColor: orderData.designColor || '',
+                    sizes: orderData.sizes || {},
+                    designPrompt: orderData.designPrompt || '',
+                    frontText: orderData.frontText || '',
+                    frontTextPosition: orderData.frontTextPosition || 'none',
+                    backText: orderData.backText || '',
+                    backTextPosition: orderData.backTextPosition || 'none'
+                })
+            ],
+            payerDetails: {
+                name: orderData.fullName || '',
+                email: orderData.email || orderData.userEmail || '',
+                phone: orderData.phone || '',
+                address: orderData.address || '',
+                city: orderData.city || '',
+                postalCode: orderData.postalCode || '',
+                notes: orderData.notes || ''
+            }
+        };
+    }
+
+    // Clean order item: keep only sizes OR quantity, not both
+    cleanOrderItem(item) {
+        const oneSizeProducts = ['hat', 'beanie', 'cap', 'mug', 'keychain'];
+        const cleanedItem = { ...item };
+        
+        // Fix: Clean up sizes object to remove null/invalid keys
+        if (cleanedItem.sizes && typeof cleanedItem.sizes === 'object') {
+            const cleanSizes = {};
+            Object.entries(cleanedItem.sizes).forEach(([size, qty]) => {
+                // Only keep valid size keys with valid quantities
+                if (size && typeof size === 'string' && size.trim() !== '' && size !== 'null' && qty > 0) {
+                    cleanSizes[size] = parseInt(qty) || 0;
+                }
+            });
+            cleanedItem.sizes = cleanSizes;
+        }
+        
+        // Determine if this is a one-size product
+        const isOneSizeProduct = oneSizeProducts.includes(cleanedItem.productType);
+        
+        if (isOneSizeProduct) {
+            // For one-size products: use quantity, remove sizes
+            if (cleanedItem.sizes && Object.keys(cleanedItem.sizes).length > 0) {
+                // Convert sizes to total quantity
+                cleanedItem.quantity = Object.values(cleanedItem.sizes).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0);
+            }
+            cleanedItem.sizes = null;
+        } else {
+            // For multi-size products: use sizes, remove quantity
+            if (cleanedItem.sizes && Object.keys(cleanedItem.sizes).length > 0) {
+                cleanedItem.quantity = null;
+            } else if (cleanedItem.quantity && cleanedItem.quantity > 0) {
+                // Convert quantity to default size (M for shirts)
+                cleanedItem.sizes = { M: cleanedItem.quantity };
+                cleanedItem.quantity = null;
+            }
+        }
+        
+        return cleanedItem;
+    }
+
+    // Save order to database (with fallback to direct Firebase)
     async saveOrder(orderData) {
         try {
             console.log('💾 Starting to save order:', orderData);
+            
+            // Try new API structure first
+            try {
+                const newStructureData = this.convertLegacyToNewStructure(orderData);
+                return await this.saveOrderViaAPI(newStructureData);
+            } catch (apiError) {
+                console.warn('⚠️ API failed, falling back to direct Firebase:', apiError);
+                // Fall back to direct Firebase save
+                return await this.saveOrderDirectly(orderData);
+            }
+            
+        } catch (error) {
+            console.error('❌ All save methods failed:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // Direct Firebase save (legacy method, kept for compatibility)
+    async saveOrderDirectly(orderData) {
+        try {
+            console.log('💾 Saving order directly to Firebase (legacy method)');
             
             const order = {
                 userId: orderData.userId,
@@ -36,11 +182,39 @@ class OrderService {
                 sizes: orderData.sizes || {},
                 totalQuantity: orderData.totalQuantity || 0,
                 
+                // Add new orderItems structure for compatibility
+                orderItems: [
+                    this.cleanOrderItem({
+                        productType: 'tshirt',
+                        designId: orderData.selectedDesign,
+                        designImage: orderData.designImage || '',
+                        color: orderData.shirtColor || '',
+                        printColor: orderData.designColor || '',
+                        sizes: orderData.sizes || {},
+                        designPrompt: orderData.designPrompt || '',
+                        frontText: orderData.frontText || '',
+                        frontTextPosition: orderData.frontTextPosition || 'none',
+                        backText: orderData.backText || '',
+                        backTextPosition: orderData.backTextPosition || 'none'
+                    })
+                ],
+                
                 // Customer details
                 customerInfo: {
                     fullName: orderData.fullName || '',
                     phone: orderData.phone || '',
                     email: orderData.email || '',
+                    address: orderData.address || '',
+                    city: orderData.city || '',
+                    postalCode: orderData.postalCode || '',
+                    notes: orderData.notes || ''
+                },
+                
+                // Add payerDetails for new structure compatibility
+                payerDetails: {
+                    name: orderData.fullName || '',
+                    email: orderData.email || orderData.userEmail || '',
+                    phone: orderData.phone || '',
                     address: orderData.address || '',
                     city: orderData.city || '',
                     postalCode: orderData.postalCode || '',
@@ -66,7 +240,7 @@ class OrderService {
                 updatedAt: serverTimestamp()
             };
 
-            console.log('💾 Order object prepared:', order);
+            console.log('💾 Order object prepared for Firebase:', order);
             console.log('💾 Saving to collection:', this.ordersCollection);
             
             const docRef = await addDoc(collection(db, this.ordersCollection), order);
@@ -79,7 +253,7 @@ class OrderService {
             };
             
         } catch (error) {
-            console.error('Error saving order:', error);
+            console.error('Error saving order to Firebase:', error);
             return {
                 success: false,
                 error: error.message
@@ -92,7 +266,20 @@ class OrderService {
         const basePrice = 89.99;
         let totalQuantity = 0;
         
-        if (orderData.sizes && typeof orderData.sizes === 'object') {
+        // Handle new orderItems structure
+        if (orderData.orderItems && Array.isArray(orderData.orderItems)) {
+            orderData.orderItems.forEach(item => {
+                if (item.quantity) {
+                    totalQuantity += parseInt(item.quantity) || 0;
+                } else if (item.sizes && typeof item.sizes === 'object') {
+                    Object.values(item.sizes).forEach(quantity => {
+                        totalQuantity += parseInt(quantity) || 0;
+                    });
+                }
+            });
+        }
+        // Handle legacy structure
+        else if (orderData.sizes && typeof orderData.sizes === 'object') {
             Object.values(orderData.sizes).forEach(quantity => {
                 totalQuantity += parseInt(quantity) || 0;
             });
@@ -135,29 +322,6 @@ class OrderService {
             
         } catch (error) {
             console.error('Error getting user orders:', error);
-            return [];
-        }
-    }
-
-    // Debug function - get all orders (for debugging only)
-    async getAllOrders() {
-        try {
-            console.log('🔍 DEBUG: Getting ALL orders from collection');
-            const querySnapshot = await getDocs(collection(db, this.ordersCollection));
-            const allOrders = [];
-            
-            querySnapshot.forEach((doc) => {
-                console.log('📄 DEBUG: Found document:', doc.id, doc.data());
-                allOrders.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            
-            console.log(`🔍 DEBUG: Total documents in collection: ${allOrders.length}`);
-            return allOrders;
-        } catch (error) {
-            console.error('❌ DEBUG: Error getting all orders:', error);
             return [];
         }
     }
@@ -208,13 +372,26 @@ class OrderService {
             statusClass: `status-${order.status}`,
             totalPrice: formatPrice(order.totalPrice),
             totalQuantity: order.totalQuantity || 0,
-            designImage: order.designImage || '',
-            designPrompt: order.designPrompt || '',
-            customerName: order.customerInfo?.fullName || '',
-            items: [{
+            designImage: order.designImage || (order.orderItems && order.orderItems[0]?.designImage) || '',
+            designPrompt: order.designPrompt || (order.orderItems && order.orderItems[0]?.designPrompt) || '',
+            customerName: order.customerInfo?.fullName || order.payerDetails?.name || '',
+            items: order.orderItems ? order.orderItems.map(item => ({
+                design: item.designPrompt ? `עיצוב AI: ${item.designPrompt.substring(0, 50)}...` : 'עיצוב מותאם אישית',
+                color: item.color || '',
+                printColor: item.printColor || '',
+                productType: item.productType || 'tshirt',
+                sizes: item.sizes || {},
+                quantity: item.quantity || null,
+                totalQuantity: item.sizes ? Object.values(item.sizes).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0) : (item.quantity || 0),
+                price: (item.sizes ? Object.values(item.sizes).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0) : (item.quantity || 0)) * 89.99
+            })) : [{
+                // Fallback to legacy structure
                 design: order.designPrompt ? `עיצוב AI: ${order.designPrompt.substring(0, 50)}...` : 'עיצוב מותאם אישית',
                 color: order.shirtColor || '',
+                printColor: order.designColor || '',
+                productType: 'tshirt',
                 sizes: order.sizes || {},
+                quantity: null,
                 totalQuantity: order.totalQuantity || 0,
                 price: order.totalPrice || 0
             }]

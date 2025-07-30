@@ -74,6 +74,10 @@ app.get('/orders', (req, res) => {
     res.sendFile(path.join(rootDir, 'public', 'html', 'my-orders.html'));
 });
 
+app.get('/test-orders', (req, res) => {
+    res.sendFile(path.join(rootDir, 'public', 'html', 'test-orders.html'));
+});
+
 // Also handle /my-orders for backward compatibility
 app.get('/my-orders', (req, res) => {
     res.redirect('/orders');

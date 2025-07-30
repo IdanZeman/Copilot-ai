@@ -1375,29 +1375,97 @@ async function submitForm() {
             quantityInputs.forEach(input => {
                 const size = input.getAttribute('data-size');
                 const quantity = parseInt(input.value) || 0;
-                if (quantity > 0) {
+                // Fix: Check that size is a valid string before adding to sizes object
+                if (quantity > 0 && size && typeof size === 'string' && size.trim() !== '') {
                     orderData.sizes[size] = quantity;
                     orderData.totalQuantity += quantity;
                 }
             });
 
-            // Import and use order service
-            const { orderService } = await import('./order-service.js');
-            const result = await orderService.saveOrder(orderData);
-            
-            if (result.success) {
-                // Store order data in formData for potential future use
-                formData = { ...formData, ...orderData, orderId: result.orderId };
+            // Prepare new order structure with orderItems array
+            const newOrderData = {
+                userId: currentUser.uid,
+                orderItems: [
+                    {
+                        productType: 'tshirt', // Currently only supporting t-shirts
+                        designId: orderData.selectedDesign,
+                        designImage: orderData.designImage,
+                        color: orderData.shirtColor,
+                        printColor: orderData.designColor,
+                        sizes: orderData.sizes,
+                        // Include additional design information
+                        designPrompt: orderData.designPrompt,
+                        frontText: orderData.frontText,
+                        frontTextPosition: orderData.frontTextPosition,
+                        backText: orderData.backText,
+                        backTextPosition: orderData.backTextPosition
+                    }
+                ],
+                payerDetails: {
+                    name: orderData.fullName,
+                    email: orderData.email,
+                    phone: orderData.phone,
+                    address: orderData.address,
+                    city: orderData.city,
+                    postalCode: orderData.postalCode,
+                    notes: orderData.notes
+                }
+            };
+
+            console.log('📦 Submitting order with new structure:', newOrderData);
+
+            // Try new API first, fallback to old method if needed
+            try {
+                const apiResponse = await fetch(`${getAPIBaseURL()}/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newOrderData)
+                });
+
+                if (apiResponse.ok) {
+                    const result = await apiResponse.json();
+                    
+                    if (result.success) {
+                        // Store order data in formData for potential future use
+                        formData = { ...formData, ...orderData, orderId: result.orderId };
+                        
+                        showSimpleSuccessNotification(`הזמנה #${result.orderId.substring(0, 8).toUpperCase()} נשלחה בהצלחה!`);
+                        
+                        // Redirect to orders page after short delay
+                        setTimeout(() => {
+                            window.location.href = '../html/my-orders.html';
+                        }, 2000);
+                        
+                        return; // Exit successfully
+                    } else {
+                        throw new Error(result.error || 'API call failed');
+                    }
+                } else {
+                    throw new Error(`API call failed with status ${apiResponse.status}`);
+                }
+            } catch (apiError) {
+                console.warn('⚠️ New API failed, falling back to Firebase:', apiError);
                 
-                showSimpleSuccessNotification(`הזמנה #${result.orderId.substring(0, 8).toUpperCase()} נשלחה בהצלחה!`);
+                // Fallback to direct Firebase method (keep compatibility)
+                const { orderService } = await import('./order-service.js');
+                const result = await orderService.saveOrder(orderData);
                 
-                // Redirect to orders page after short delay
-                setTimeout(() => {
-                    window.location.href = '../html/my-orders.html';
-                }, 2000);
-                
-            } else {
-                throw new Error(result.error || 'Failed to save order');
+                if (result.success) {
+                    // Store order data in formData for potential future use
+                    formData = { ...formData, ...orderData, orderId: result.orderId };
+                    
+                    showSimpleSuccessNotification(`הזמנה #${result.orderId.substring(0, 8).toUpperCase()} נשלחה בהצלחה!`);
+                    
+                    // Redirect to orders page after short delay
+                    setTimeout(() => {
+                        window.location.href = '../html/my-orders.html';
+                    }, 2000);
+                    
+                } else {
+                    throw new Error(result.error || 'Failed to save order');
+                }
             }
             
         } catch (error) {

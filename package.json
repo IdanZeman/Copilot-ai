@@ -25,6 +25,7 @@
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "firebase": "^12.0.0",
+    "firebase-admin": "^12.7.0",
     "openai": "^5.10.1"
   },
   "devDependencies": {

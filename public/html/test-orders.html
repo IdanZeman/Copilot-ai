@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Order Structure</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test New Order Structure</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Submit Single T-Shirt Order</h2>
+        <button onclick="testSingleTShirtOrder()">Test Single T-Shirt</button>
+        <div id="test1-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Submit Multiple Items Order</h2>
+        <button onclick="testMultipleItemsOrder()">Test Multiple Items</button>
+        <div id="test2-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Submit Hat Order</h2>
+        <button onclick="testHatOrder()">Test Hat Order</button>
+        <div id="test3-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Test Invalid Sizes Cleanup</h2>
+        <button onclick="testInvalidSizesCleanup()">Test Invalid Sizes</button>
+        <div id="test4-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function testSingleTShirtOrder() {
+            const resultDiv = document.getElementById('test1-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const orderData = {
+                    userId: 'test-user-123',
+                    orderItems: [
+                        {
+                            productType: 'tshirt',
+                            designId: 'design-abc-123',
+                            designImage: '/images/test-design.png',
+                            color: 'black',
+                            printColor: 'white',
+                            sizes: { S: 2, M: 3, L: 1 },
+                            designPrompt: 'Test design for birthday party',
+                            frontText: 'Happy Birthday',
+                            frontTextPosition: 'above',
+                            backText: '',
+                            backTextPosition: 'none'
+                        }
+                    ],
+                    payerDetails: {
+                        name: 'John Doe',
+                        email: 'john@example.com',
+                        phone: '0501234567',
+                        address: 'Test Address 123',
+                        city: 'Tel Aviv',
+                        postalCode: '12345',
+                        notes: 'Test order'
+                    }
+                };
+
+                console.log('Sending order:', orderData);
+
+                const response = await fetch(`${API_BASE}/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Success!</strong><br>
+                        Order ID: ${result.orderId}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Error:</strong><br>
+                    ${error.message}<br>
+                    <pre>${JSON.stringify(error, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function testMultipleItemsOrder() {
+            const resultDiv = document.getElementById('test2-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const orderData = {
+                    userId: 'test-user-456',
+                    orderItems: [
+                        {
+                            productType: 'tshirt',
+                            designId: 'design-1',
+                            color: 'red',
+                            printColor: 'black',
+                            sizes: { M: 2, L: 1 },
+                            designPrompt: 'Cool design 1'
+                        },
+                        {
+                            productType: 'hoodie',
+                            designId: 'design-2',
+                            color: 'navy',
+                            printColor: 'white',
+                            sizes: { L: 1, XL: 2 },
+                            designPrompt: 'Cool design 2'
+                        }
+                    ],
+                    payerDetails: {
+                        name: 'Jane Smith',
+                        email: 'jane@example.com',
+                        phone: '0507654321',
+                        address: 'Another Address 456',
+                        city: 'Jerusalem'
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Success!</strong><br>
+                        Order ID: ${result.orderId}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Error:</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testHatOrder() {
+            const resultDiv = document.getElementById('test3-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const orderData = {
+                    userId: 'test-user-789',
+                    orderItems: [
+                        {
+                            productType: 'hat',
+                            designId: 'hat-design-1',
+                            color: 'black',
+                            printColor: 'gold',
+                            quantity: 5,
+                            designPrompt: 'Custom hat design'
+                        }
+                    ],
+                    payerDetails: {
+                        name: 'Bob Johnson',
+                        email: 'bob@example.com',
+                        phone: '0509876543',
+                        address: 'Hat Street 789',
+                        city: 'Haifa'
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Success!</strong><br>
+                        Order ID: ${result.orderId}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Error:</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testInvalidSizesCleanup() {
+            const resultDiv = document.getElementById('test4-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Test order with invalid size keys
+                const orderData = {
+                    userId: 'test-user-cleanup',
+                    orderItems: [
+                        {
+                            productType: 'tshirt',
+                            designId: 'design-test',
+                            color: 'blue',
+                            printColor: 'yellow',
+                            sizes: { 
+                                'S': 2, 
+                                'null': 3,  // This should be cleaned up
+                                '': 1,      // This should be cleaned up
+                                'M': 1 
+                            },
+                            quantity: 5,    // This should be removed for tshirt
+                            designPrompt: 'Test cleanup'
+                        },
+                        {
+                            productType: 'hat',
+                            designId: 'hat-test',
+                            color: 'red',
+                            printColor: 'white',
+                            sizes: { 'M': 3 },  // This should be converted to quantity
+                            quantity: 2         // This should win for hat
+                        }
+                    ],
+                    payerDetails: {
+                        name: 'Test Cleanup',
+                        email: 'cleanup@test.com',
+                        phone: '0501111111'
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    resultDiv.className = 'result success';
+                    
+                    // Check if cleanup worked
+                    const savedOrder = result.order;
+                    const tshirtItem = savedOrder.orderItems.find(item => item.productType === 'tshirt');
+                    const hatItem = savedOrder.orderItems.find(item => item.productType === 'hat');
+                    
+                    let cleanupResults = [];
+                    
+                    if (tshirtItem) {
+                        cleanupResults.push(`T-Shirt: sizes=${JSON.stringify(tshirtItem.sizes)}, quantity=${tshirtItem.quantity}`);
+                        if (tshirtItem.sizes && !tshirtItem.sizes.null && !tshirtItem.sizes[''] && tshirtItem.quantity === null) {
+                            cleanupResults.push('✅ T-Shirt cleanup successful');
+                        } else {
+                            cleanupResults.push('❌ T-Shirt cleanup failed');
+                        }
+                    }
+                    
+                    if (hatItem) {
+                        cleanupResults.push(`Hat: sizes=${JSON.stringify(hatItem.sizes)}, quantity=${hatItem.quantity}`);
+                        if (hatItem.sizes === null && hatItem.quantity > 0) {
+                            cleanupResults.push('✅ Hat cleanup successful');
+                        } else {
+                            cleanupResults.push('❌ Hat cleanup failed');
+                        }
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <strong>✅ Success!</strong><br>
+                        Order ID: ${result.orderId}<br>
+                        <strong>Cleanup Results:</strong><br>
+                        ${cleanupResults.join('<br>')}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Error:</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
