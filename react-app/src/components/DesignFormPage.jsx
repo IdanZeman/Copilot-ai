@@ -14,13 +14,46 @@ const DesignFormPage = () => {
   })
 
   // Authentication
-  const { isLoggedIn, requireAuth } = useAuth()
+  const { isLoggedIn, requireAuth, user } = useAuth()
   
   // Notifications
   const { showSuccess, showError } = useNotifications()
 
   // Auth required modal state
   const [showAuthModal, setShowAuthModal] = useState(false)
+
+  // Check if user is logged in - if not, show auth requirement
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setShowAuthModal(true)
+    }
+  }, [isLoggedIn])
+
+  // If not logged in, show auth modal instead of the form
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="pt-24 flex items-center justify-center min-h-screen">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4 text-center">
+            <div className="mb-6">
+              <i className="fas fa-lock text-4xl text-blue-500 mb-4"></i>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">נדרשת התחברות</h2>
+              <p className="text-gray-600">
+                כדי להתחיל לעצב חולצה, עליך להתחבר תחילה
+              </p>
+            </div>
+            <AuthRequiredModal 
+              isOpen={showAuthModal} 
+              onClose={() => setShowAuthModal(false)}
+              title="נדרשת התחברות לעיצוב חולצה"
+              message="כדי להתחיל בתהליך העיצוב ולשמור את ההזמנה שלך, עליך להתחבר תחילה"
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // State for form data
   const [currentStep, setCurrentStep] = useState(0)
@@ -205,7 +238,7 @@ const DesignFormPage = () => {
     }
   }
   useEffect(() => {
-    if (currentStep === 2 && !formData.selectedDesign && !isGenerating && formData.description.trim().length > 10) {
+    if (currentStep === 2 && !formData.selectedDesign && !isGenerating && formData.description.trim().length >= 10) {
       generateBackDesign()
     }
   }, [currentStep])
@@ -216,6 +249,15 @@ const DesignFormPage = () => {
     if (!isLoggedIn) {
       setShowAuthModal(true)
       return
+    }
+
+    // Validate step requirements
+    if (currentStep === 1) {
+      // Check description minimum length
+      if (formData.description.trim().length < 10) {
+        showError('תיאור קצר מדי', 'אנא תאר במינימום 10 תווים מה החולצה צריכה לבטא')
+        return
+      }
     }
 
     if (currentStep < steps.length - 1) {
@@ -284,36 +326,68 @@ const DesignFormPage = () => {
   )
 
   // Step 2: Description
-  const renderStep2 = () => (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">מה החולצה צריכה לבטא?</h2>
-      
-      <div className="bg-white p-6 rounded-xl shadow-lg">
-        <textarea
-          id="designPrompt"
-          value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="תאר/י במילים שלך מה החולצה צריכה לבטא... (לדוגמה: זוג שמתחתן בשקיעה, צוות לוחמים רצים עם אלונקה, רגע של ניצחון)"
-          rows="6"
-          maxLength="200"
-          required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-        />
-        <div className="flex justify-between items-center mt-2">
-          <div className="text-sm text-gray-500">
-            {formData.description.length}/200
+  const renderStep2 = () => {
+    const descriptionLength = formData.description.trim().length
+    const isDescriptionValid = descriptionLength >= 10
+    
+    return (
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">מה החולצה צריכה לבטא?</h2>
+        
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <textarea
+            id="designPrompt"
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            placeholder="תאר/י במילים שלך מה החולצה צריכה לבטא... (לדוגמה: זוג שמתחתן בשקיעה, צוות לוחמים רצים עם אלונקה, רגע של ניצחון)"
+            rows="6"
+            maxLength="200"
+            required
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors ${
+              descriptionLength > 0 && !isDescriptionValid 
+                ? 'border-red-300 bg-red-50' 
+                : isDescriptionValid 
+                ? 'border-green-300 bg-green-50' 
+                : 'border-gray-300'
+            }`}
+          />
+          <div className="flex justify-between items-center mt-2">
+            <div className={`text-sm ${
+              descriptionLength > 0 && !isDescriptionValid 
+                ? 'text-red-600' 
+                : isDescriptionValid 
+                ? 'text-green-600' 
+                : 'text-gray-500'
+            }`}>
+              {descriptionLength > 0 && !isDescriptionValid && (
+                <span className="flex items-center gap-1">
+                  <i className="fas fa-exclamation-triangle"></i>
+                  נדרש מינימום 10 תווים ({10 - descriptionLength} נוספים)
+                </span>
+              )}
+              {isDescriptionValid && (
+                <span className="flex items-center gap-1">
+                  <i className="fas fa-check-circle"></i>
+                  מעולה! התיאור מספק
+                </span>
+              )}
+              {descriptionLength === 0 && 'מינימום 10 תווים נדרש'}
+            </div>
+            <div className="text-sm text-gray-500">
+              {formData.description.length}/200
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <p className="text-sm text-blue-800">
-          <strong>דוגמאות:</strong> "חברי היחידה רצים יחד עם דגל", "זוג רוקד מתחת לכוכבים", 
-          "ילדים משחקים כדורגל בשקיעה", "צוות עובדים בונה ביחד"
-        </p>
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>דוגמאות:</strong> "חברי היחידה רצים יחד עם דגל", "זוג רוקד מתחת לכוכבים", 
+            "ילדים משחקים כדורגל בשקיעה", "צוות עובדים בונה ביחד"
+          </p>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   // Step 3: Back Design Generation
   const renderStep3 = () => (
@@ -1376,7 +1450,7 @@ const DesignFormPage = () => {
   const canProceed = () => {
     switch (currentStep) {
       case 0: return formData.eventType && (formData.eventType !== 'other' || formData.customEventType.trim())
-      case 1: return formData.description.trim().length > 10
+      case 1: return formData.description.trim().length >= 10
       case 2: return formData.selectedDesign && (formData.backTextPosition === 'none' || formData.backText.trim())
       case 3: {
         // Must select a front design method and have some content

@@ -1,10 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMetaTags } from '../hooks/usePageTitle'
+import { useAuth } from '../contexts/AuthContext'
+import { AuthRequiredModal } from './LoginButton'
 import Navbar from './Navbar'
 
 const LandingPage = () => {
   console.log('🏡 LandingPage component rendering')
+  
+  const { isLoggedIn } = useAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
   
   // SEO Meta tags
   useMetaTags({
@@ -17,6 +22,13 @@ const LandingPage = () => {
     const element = document.getElementById(sectionId)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleStartDesign = (e) => {
+    if (!isLoggedIn) {
+      e.preventDefault()
+      setShowAuthModal(true)
     }
   }
 
@@ -40,10 +52,11 @@ const LandingPage = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/order"
+                  onClick={handleStartDesign}
                   className="btn btn-primary btn-large bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg font-medium rounded-lg transition-all duration-200 no-underline flex items-center justify-center gap-2"
                 >
                   <i className="fas fa-magic"></i>
-                  התחל לעצב עכשיו
+                  {isLoggedIn ? 'התחל לעצב עכשיו' : 'התחבר והתחל לעצב'}
                 </Link>
                 <button
                   onClick={() => scrollToSection('how-it-works')}
@@ -267,6 +280,14 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Auth Required Modal */}
+      <AuthRequiredModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        title="נדרשת התחברות"
+        message="כדי להתחיל בתהליך עיצוב החולצה, עליך להתחבר תחילה"
+      />
     </div>
   )
 }

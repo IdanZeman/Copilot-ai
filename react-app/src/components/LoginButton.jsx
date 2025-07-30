@@ -14,10 +14,10 @@ const LoginButton = ({ className = '', size = 'md', variant = 'primary', childre
   };
 
   const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+    primary: 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg',
     secondary: 'bg-gray-600 hover:bg-gray-700 text-white',
     outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
-    google: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm'
+    google: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-lg hover:shadow-xl transform hover:scale-105'
   };
 
   const handleSignIn = async () => {
@@ -38,9 +38,10 @@ const LoginButton = ({ className = '', size = 'md', variant = 'primary', childre
       className={`
         ${sizeClasses[size]}
         ${variantClasses[variant]}
-        font-medium rounded-lg transition-all duration-200
-        disabled:opacity-50 disabled:cursor-not-allowed
-        flex items-center justify-center gap-2
+        font-semibold rounded-xl transition-all duration-300 ease-in-out
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+        flex items-center justify-center gap-3
+        focus:outline-none focus:ring-4 focus:ring-blue-200
         ${className}
       `}
       {...props}
@@ -179,11 +180,14 @@ const UserProfile = ({ className = '', showPhoto = true, showEmail = false }) =>
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      {showPhoto && userPhoto && (
+      {showPhoto && (
         <img
-          src={userPhoto}
+          src={userPhoto || '/images/default-avatar.png'}
           alt={userName}
-          className="w-8 h-8 rounded-full border-2 border-gray-200"
+          className="w-8 h-8 rounded-full border-2 border-gray-200 object-cover"
+          onError={(e) => {
+            e.target.src = '/images/default-avatar.png';
+          }}
         />
       )}
       <div className="flex flex-col">

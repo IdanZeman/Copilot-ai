@@ -67,37 +67,6 @@ const Navbar = () => {
             </li>
             <li>
               <Link
-                to="/orders"
-                className={`nav-link ${
-                  isActiveLink('/orders')
-                    ? 'text-blue-600 bg-blue-50 px-4 py-2 rounded-full'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-full'
-                } font-medium transition-all duration-300 no-underline`}
-              >
-                ההזמנות שלי
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/cart"
-                className={`nav-link ${
-                  isActiveLink('/cart')
-                    ? 'text-blue-600 bg-blue-50 px-4 py-2 rounded-full'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-full'
-                } font-medium transition-all duration-300 no-underline relative`}
-              >
-                <i className="fas fa-shopping-cart mr-2"></i>
-                עגלה
-                {/* Dynamic Badge */}
-                {state.cart.totalItems > 0 && (
-                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {state.cart.totalItems}
-                  </span>
-                )}
-              </Link>
-            </li>
-            <li>
-              <Link
                 to="/order"
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:-translate-y-0.5 no-underline"
               >
@@ -120,30 +89,39 @@ const Navbar = () => {
                   
                   {/* User Dropdown Menu */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                      <div className="p-3 border-b border-gray-100">
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 z-50">
+                      <div className="p-4 border-b border-gray-100">
                         <UserProfile showPhoto={true} showEmail={true} />
                       </div>
                       <div className="p-2">
                         <Link
-                          to="/orders"
-                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md no-underline"
+                          to="/cart"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg no-underline transition-all duration-200"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <i className="fas fa-box mr-2"></i>
-                          ההזמנות שלי
+                          <i className="fas fa-shopping-cart w-5 text-center ml-3"></i>
+                          <span>עגלת קניות {state.cart.totalItems > 0 && `(${state.cart.totalItems})`}</span>
+                        </Link>
+                        <Link
+                          to="/orders"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg no-underline transition-all duration-200"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <i className="fas fa-box w-5 text-center ml-3"></i>
+                          <span>ההזמנות שלי</span>
                         </Link>
                         <Link
                           to="/profile"
-                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md no-underline"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg no-underline transition-all duration-200"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <i className="fas fa-user mr-2"></i>
-                          פרופיל
+                          <i className="fas fa-user w-5 text-center ml-3"></i>
+                          <span>פרופיל</span>
                         </Link>
                         <hr className="my-2" />
-                        <div className="px-3 py-2">
+                        <div className="px-2 py-2">
                           <LogoutButton size="sm" className="w-full">
+                            <i className="fas fa-sign-out-alt w-5 text-center ml-2"></i>
                             התנתק
                           </LogoutButton>
                         </div>
@@ -187,25 +165,6 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   בית
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/orders"
-                  className="block text-gray-700 hover:text-blue-600 py-2 no-underline"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  ההזמנות שלי
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/cart"
-                  className="block text-gray-700 hover:text-blue-600 py-2 no-underline"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <i className="fas fa-shopping-cart mr-2"></i>
-                  עגלה {state.cart.totalItems > 0 && `(${state.cart.totalItems})`}
                 </Link>
               </li>
               <li>
