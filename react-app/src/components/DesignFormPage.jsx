@@ -3,6 +3,10 @@ import { useMetaTags } from '../hooks/usePageTitle'
 import { useNotifications } from '../contexts/NotificationContext'
 import { useAuth } from '../contexts/AuthContext'
 import { AuthRequiredModal } from './LoginButton'
+import { openAIService } from '../services/openai-service'
+import usageTracker from '../services/usage-tracker'
+import ordersService from '../services/orders-service'
+import adminService from '../services/admin-service'
 import Navbar from './Navbar'
 
 const DesignFormPage = () => {
@@ -21,6 +25,80 @@ const DesignFormPage = () => {
 
   // Auth required modal state
   const [showAuthModal, setShowAuthModal] = useState(false)
+
+  // Usage tracking state
+  const [usageStats, setUsageStats] = useState({
+    hourlyCount: 0,
+    dailyCount: 0,
+    hourlyLimit: 3,
+    dailyLimit: 10
+  })
+  const [isLoadingUsage, setIsLoadingUsage] = useState(false)
+
+  // State for dev mode status
+  const [isDevMode, setIsDevMode] = useState(false)
+
+  // Check dev mode status on component mount and when admin settings change
+  useEffect(() => {
+    const checkDevMode = () => {
+      const adminOverride = localStorage.getItem('ADMIN_DEV_MODE_OVERRIDE');
+      let devModeStatus;
+      
+      if (adminOverride !== null) {
+        devModeStatus = adminOverride === 'true';
+        console.log('🚧 DesignFormPage: Using admin override:', devModeStatus);
+      } else {
+        devModeStatus = import.meta.env.VITE_DEV_MODE === 'true';
+        console.log('🚧 DesignFormPage: Using env VITE_DEV_MODE:', devModeStatus, 'Raw:', import.meta.env.VITE_DEV_MODE);
+      }
+      
+      console.log('🚧 DesignFormPage Dev Mode Check:', {
+        adminOverride,
+        envDevMode: import.meta.env.VITE_DEV_MODE,
+        finalStatus: devModeStatus
+      });
+      
+      setIsDevMode(devModeStatus);
+    };
+
+    checkDevMode();
+    
+    // Listen for storage changes (when admin changes dev mode)
+    const handleStorageChange = () => {
+      checkDevMode();
+    };
+    
+    const handleDevModeChange = () => {
+      checkDevMode();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('devModeChanged', handleDevModeChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('devModeChanged', handleDevModeChange);
+    };
+  }, [])
+
+  // Load usage stats when user logs in
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      loadUsageStats()
+    }
+  }, [isLoggedIn, user])
+
+  const loadUsageStats = async () => {
+    try {
+      setIsLoadingUsage(true)
+      const stats = await usageTracker.getUserUsageStats()
+      setUsageStats(stats)
+    } catch (error) {
+      console.error('Error loading usage stats:', error)
+    } finally {
+      setIsLoadingUsage(false)
+    }
+  }
 
   // Check if user is logged in - if not, show auth requirement
   useEffect(() => {
@@ -58,6 +136,8 @@ const DesignFormPage = () => {
   // State for form data
   const [currentStep, setCurrentStep] = useState(0)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [showImproveDialog, setShowImproveDialog] = useState(false)
+  const [improvementText, setImprovementText] = useState('')
   const [formData, setFormData] = useState({
     eventType: '',
     customEventType: '',
@@ -115,23 +195,69 @@ const DesignFormPage = () => {
     setIsGenerating(true)
     
     try {
-      // For now, we'll use a mock design generation
-      // Later this will be connected to the real AI API
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
+      // בדיקת מגבלות שימוש
+      console.log('🔍 בודק מגבלות שימוש...')
+      const usageCheck = await usageTracker.canUserGenerate()
       
-      // Mock design URL - in real implementation this would come from the AI API
-      const mockDesignUrl = '/images/default-tshirt.png'
+      if (!usageCheck.canGenerate) {
+        showError('הגעת למגבלת הגנרוטים', usageCheck.reason)
+        return
+      }
+
+      showSuccess('מתחיל ליצור עיצוב...', 'ייקח כמה שניות')
       
-      setFormData(prev => ({
-        ...prev,
-        selectedDesign: mockDesignUrl
-      }))
+      // יצירת prompt מותאם
+      const designPrompt = openAIService.createShirtDesignPrompt(
+        formData.description,
+        formData.eventType,
+        'graphic'
+      )
+
+      console.log('🎨 מתחיל ליצור עיצוב עם OpenAI...')
       
-      console.log('✅ Design generated successfully (mock)')
+      // יצירת תמונה עם OpenAI API
+      const result = await openAIService.generateImage(designPrompt, {
+        size: '1024x1024',
+        quality: 'standard',
+        style: 'vivid'
+      })
+
+      if (result.success) {
+        // רישום השימוש (רק אם זה לא מצב dev)
+        if (!result.devMode) {
+          await usageTracker.recordGeneration()
+          await loadUsageStats() // עדכון הסטטיסטיקות
+        }
+
+        setFormData(prev => ({
+          ...prev,
+          selectedDesign: result.imageUrl
+        }))
+
+        // הודעת הצלחה
+        const message = result.devMode 
+          ? result.message || 'נוצר עיצוב גנרי (מצב פיתוח)'
+          : 'עיצוב נוצר בהצלחה!'
+        
+        const details = result.devMode && result.message?.includes('מפתח OpenAI לא תקין')
+          ? 'לשימוש ב-AI אמיתי, יש צורך במפתח OpenAI תקין'
+          : result.revisedPrompt ? `OpenAI שיפר: ${result.revisedPrompt}` : ''
+        
+        showSuccess(message, details)
+        console.log('✅ עיצוב נוצר בהצלחה')
+      } else {
+        throw new Error('לא הצלחנו ליצור עיצוב')
+      }
       
     } catch (error) {
-      console.error('❌ Error generating design:', error)
-      // In a real app, show error notification here
+      console.error('❌ שגיאה ביצירת עיצוב:', error)
+      showError('שגיאה ביצירת עיצוב', error.message || 'אנא נסה שוב מאוחר יותר')
+      
+      // Fallback למצב Mock אם יש שגיאה
+      setFormData(prev => ({
+        ...prev,
+        selectedDesign: '/images/default-tshirt.png'
+      }))
     } finally {
       setIsGenerating(false)
     }
@@ -146,6 +272,90 @@ const DesignFormPage = () => {
       backTextPosition: 'none'
     }))
     await generateBackDesign()
+  }
+
+  // Improve existing design
+  const improveDesign = async (improvementPrompt) => {
+    if (!improvementPrompt.trim()) {
+      showError('שגיאה', 'אנא הזן הנחיות לשיפור העיצוב')
+      return
+    }
+
+    setIsGenerating(true)
+    
+    try {
+      // בדיקת מגבלות שימוש
+      console.log('🔍 בודק מגבלות שימוש לשיפור עיצוב...')
+      const usageCheck = await usageTracker.canUserGenerate()
+      
+      if (!usageCheck.canGenerate) {
+        showError('הגעת למגבלת הגנרוטים', usageCheck.reason)
+        return
+      }
+
+      showSuccess('משפר את העיצוב...', 'ייקח כמה שניות')
+
+      // יצירת prompt משופר המבוסס על הפרומפט המקורי והשיפורים המבוקשים
+      const improvedPrompt = openAIService.createShirtDesignPrompt(
+        `${formData.description}. דגשים נוספים לשיפור: ${improvementPrompt}`,
+        formData.eventType,
+        'graphic'
+      )
+
+      console.log('🎨 משפר עיצוב עם OpenAI...', { 
+        originalDescription: formData.description,
+        improvementPrompt,
+        finalPrompt: improvedPrompt
+      })
+      
+      // יצירת תמונה משופרת עם OpenAI API
+      const result = await openAIService.generateImage(improvedPrompt, {
+        size: '1024x1024',
+        quality: 'standard',
+        style: 'vivid'
+      })
+
+      if (result.success) {
+        // רישום השימוש (רק אם זה לא מצב dev)
+        if (!result.devMode) {
+          await usageTracker.recordGeneration()
+          await loadUsageStats() // עדכון הסטטיסטיקות
+        }
+
+        // עדכון העיצוב החדש
+        setFormData(prev => ({
+          ...prev,
+          selectedDesign: result.imageUrl
+        }))
+
+        // הודעת הצלחה
+        const message = result.devMode 
+          ? result.message || 'עיצוב שופר (מצב פיתוח)'
+          : 'עיצוב שופר בהצלחה!'
+        
+        const details = result.devMode && result.message?.includes('מפתח OpenAI לא תקין')
+          ? 'לשימוש ב-AI אמיתי, יש צורך במפתח OpenAI תקין'
+          : result.revisedPrompt ? `OpenAI שיפר: ${result.revisedPrompt}` : ''
+        
+        showSuccess(message, details)
+        console.log('✅ עיצוב שופר בהצלחה')
+      } else {
+        throw new Error('לא הצלחנו לשפר את העיצוב')
+      }
+      
+    } catch (error) {
+      console.error('❌ שגיאה בשיפור עיצוב:', error)
+      showError('שגיאה בשיפור עיצוב', error.message || 'אנא נסה שוב מאוחר יותר')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  // Handle improve design
+  const handleImproveDesign = async () => {
+    await improveDesign(improvementText)
+    setShowImproveDialog(false)
+    setImprovementText('')
   }
 
   // Generate front design using AI
@@ -181,30 +391,47 @@ const DesignFormPage = () => {
     }
 
     try {
-      // Here we would normally send to backend
-      console.log('📤 Submitting order:', formData)
+      console.log('📤 שולח הזמנה לשמירה...')
       
-      // Mock success - in real app would be API call
-      // Show success notification instead of modal
-      showSuccess(
-        'ההזמנה נשלחה בהצלחה! נחזור אליך בתוך 24 שעות עם אישור ומחיר מדויק.',
-        { 
-          title: '🎉 הזמנה נשלחה!',
-          duration: 6000 
-        }
-      )
+      // Calculate total price (this would be more complex in real app)
+      const basePrice = 80 // מחיר בסיס לחולצה
+      const totalPrice = basePrice * (formData.quantity || 1)
       
-      // Redirect to homepage after a short delay
-      setTimeout(() => {
-        window.location.href = '/'
-      }, 2000)
+      // Prepare order data
+      const orderData = {
+        ...formData,
+        totalPrice,
+        designGenerationMethod: formData.selectedDesign ? 'ai' : 'none'
+      }
+      
+      // Save order to Firebase
+      const result = await ordersService.createOrder(orderData)
+      
+      if (result.success) {
+        console.log('✅ הזמנה נשמרה בהצלחה:', result.orderId)
+        
+        showSuccess(
+          `ההזמנה נשלחה בהצלחה! מספר הזמנה: ${result.orderId}`,
+          { 
+            title: '🎉 הזמנה נשלחה!',
+            duration: 6000 
+          }
+        )
+        
+        // Redirect to homepage after a short delay
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 2000)
+      } else {
+        throw new Error(result.error || 'שגיאה בשמירת ההזמנה')
+      }
       
     } catch (error) {
-      console.error('❌ Error submitting order:', error)
-      showError('שגיאה בשליחת ההזמנה. אנא נסה שוב.', {
-        title: 'שגיאה',
-        duration: 8000
-      })
+      console.error('❌ שגיאה בשליחת ההזמנה:', error)
+      showError(
+        'שגיאה בשליחת ההזמנה. אנא נסה שוב.', 
+        error.message || 'שגיאה לא ידועה'
+      )
     }
   }
   const handleFileUpload = (event) => {
@@ -242,6 +469,21 @@ const DesignFormPage = () => {
       generateBackDesign()
     }
   }, [currentStep])
+
+  // Handle Escape key for closing improve dialog
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && showImproveDialog) {
+        setShowImproveDialog(false)
+        setImprovementText('')
+      }
+    }
+
+    if (showImproveDialog) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showImproveDialog])
 
   // Handle step navigation
   const nextStep = () => {
@@ -394,26 +636,86 @@ const DesignFormPage = () => {
     <div className="space-y-6">
       <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">בחר/י עיצוב לחלק האחורי של החולצה</h2>
       
+      {/* Usage Statistics */}
+      {!isLoadingUsage && (
+        <div className="bg-gray-50 p-4 rounded-lg border">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">שימוש היום:</span> {usageStats.dailyCount}/{usageStats.dailyLimit}
+            </div>
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">שימוש בשעה האחרונה:</span> {usageStats.hourlyCount}/{usageStats.hourlyLimit}
+            </div>
+          </div>
+          <div className="mt-2 flex gap-2">
+            {/* Daily Usage Bar */}
+            <div className="flex-1">
+              <div className="bg-gray-200 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    usageStats.dailyCount >= usageStats.dailyLimit 
+                      ? 'bg-red-500' 
+                      : usageStats.dailyCount >= usageStats.dailyLimit * 0.8 
+                      ? 'bg-yellow-500' 
+                      : 'bg-green-500'
+                  }`}
+                  style={{ 
+                    width: `${Math.min(100, (usageStats.dailyCount / usageStats.dailyLimit) * 100)}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+            {/* Hourly Usage Bar */}
+            <div className="flex-1">
+              <div className="bg-gray-200 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    usageStats.hourlyCount >= usageStats.hourlyLimit 
+                      ? 'bg-red-500' 
+                      : usageStats.hourlyCount >= usageStats.hourlyLimit * 0.8 
+                      ? 'bg-yellow-500' 
+                      : 'bg-green-500'
+                  }`}
+                  style={{ 
+                    width: `${Math.min(100, (usageStats.hourlyCount / usageStats.hourlyLimit) * 100)}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Generate Design Button */}
       {!formData.selectedDesign && (
         <div className="text-center">
           <button
             onClick={generateBackDesign}
-            disabled={isGenerating}
+            disabled={isGenerating || usageStats.hourlyCount >= usageStats.hourlyLimit || usageStats.dailyCount >= usageStats.dailyLimit}
             className={`px-8 py-4 rounded-lg font-medium text-lg transition-all duration-200 ${
-              isGenerating
+              isGenerating || usageStats.hourlyCount >= usageStats.hourlyLimit || usageStats.dailyCount >= usageStats.dailyLimit
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
             {isGenerating ? (
               <>
-                <i className="fas fa-spinner fa-spin mr-2"></i>
+                <i className="fas fa-spinner fa-spin ml-3"></i>
                 יוצר עיצוב...
+              </>
+            ) : usageStats.hourlyCount >= usageStats.hourlyLimit ? (
+              <>
+                <i className="fas fa-clock ml-3"></i>
+                הגעת למגבלה השעתית
+              </>
+            ) : usageStats.dailyCount >= usageStats.dailyLimit ? (
+              <>
+                <i className="fas fa-calendar ml-3"></i>
+                הגעת למגבלה היומית
               </>
             ) : (
               <>
-                <i className="fas fa-magic mr-2"></i>
+                <i className="fas fa-magic ml-3"></i>
                 צור עיצוב עכשיו
               </>
             )}
@@ -444,22 +746,93 @@ const DesignFormPage = () => {
             </div>
           </div>
           
-          {/* Regenerate Button */}
-          <div className="text-center mb-6">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <button
               onClick={regenerateDesign}
               disabled={isGenerating}
-              className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              <i className="fas fa-redo mr-2"></i>
+              <i className="fas fa-redo ml-3"></i>
               צור עיצוב חדש
             </button>
+            
+            <button
+              onClick={() => setShowImproveDialog(true)}
+              disabled={isGenerating}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <i className="fas fa-edit ml-3"></i>
+              שפר עיצוב
+            </button>
           </div>
+
+          {/* Improve Design Dialog */}
+          {showImproveDialog && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-xl">
+                <h4 className="text-xl font-semibold mb-4 text-center">
+                  <i className="fas fa-edit text-green-600 ml-3"></i>
+                  שפר את העיצוב
+                </h4>
+                
+                <p className="text-gray-600 text-sm mb-4">
+                  תאר איך תרצה לשפר את העיצוב הקיים (לדוגמה: הוסף יותר פרטים, שנה צבעים, הוסף אלמנטים נוספים)
+                  <br />
+                  <span className="text-xs text-gray-500">💡 טיפ: Ctrl+Enter לשליחה מהירה</span>
+                </p>
+                
+                <textarea
+                  value={improvementText}
+                  onChange={(e) => setImprovementText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey && improvementText.trim()) {
+                      handleImproveDesign()
+                    }
+                  }}
+                  placeholder="לדוגמה: הוסף עוד פרטים בעפרון, הפוך את הצבעים לכחול-לבן, הוסף נשר מעל ההרים..."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none mb-4"
+                  rows="4"
+                  maxLength="200"
+                />
+                
+                <div className="text-right text-xs text-gray-500 mb-4">
+                  {improvementText.length}/200
+                </div>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowImproveDialog(false)
+                      setImprovementText('')
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                  >
+                    ביטול
+                  </button>
+                  <button
+                    onClick={handleImproveDesign}
+                    disabled={!improvementText.trim() || isGenerating}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin ml-3"></i>
+                        משפר...
+                      </>
+                    ) : (
+                      'שפר עיצוב'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Back Text Options */}
           <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-xl border border-gray-200">
             <h4 className="text-lg font-semibold mb-6 text-gray-800 text-center">
-              <i className="fas fa-font text-blue-600 mr-2"></i>
+              <i className="fas fa-font text-blue-600 ml-2"></i>
               רוצה להוסיף טקסט לעיצוב האחורי?
             </h4>
             
@@ -551,7 +924,7 @@ const DesignFormPage = () => {
             {formData.backTextPosition !== 'none' && (
               <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border-2 border-dashed border-blue-300">
                 <h5 className="text-center text-sm font-semibold text-blue-800 mb-4 flex items-center justify-center">
-                  <i className="fas fa-eye mr-2"></i>
+                  <i className="fas fa-eye ml-2"></i>
                   תצוגה מקדימה - חלק אחורי של החולצה
                 </h5>
                 <div className="bg-gradient-to-b from-gray-100 to-gray-200 p-8 rounded-lg text-center relative min-h-80 flex flex-col justify-center items-center">
@@ -591,7 +964,7 @@ const DesignFormPage = () => {
                   <div className="mt-4 text-center">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
                         נראה מעולה! מוכן להמשיך
-                      <i className="fas fa-check-circle ml-1"></i>
+                      <i className="fas fa-check-circle ml-2"></i>
                     </span>
                   </div>
                 )}
@@ -610,7 +983,7 @@ const DesignFormPage = () => {
       {/* Front Design Method Selection */}
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
         <h3 className="text-xl font-semibold mb-6 text-gray-800 text-center">
-          <i className="fas fa-palette text-blue-600 mr-2"></i>
+          <i className="fas fa-palette text-blue-600 ml-2"></i>
           איך תרצה לעצב את החלק הקדמי?
         </h3>
         
@@ -680,12 +1053,12 @@ const DesignFormPage = () => {
         {formData.frontDesignMethod === 'ai' && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h4 className="font-semibold text-lg mb-4 text-center text-purple-800">
-              <i className="fas fa-magic mr-2"></i>
+              <i className="fas fa-magic ml-2"></i>
               עיצוב אוטומטי לחלק הקדמי
             </h4>
             <div className="bg-purple-50 p-4 rounded-lg text-center">
               <p className="text-purple-800 mb-4">
-                <i className="fas fa-lightbulb mr-2"></i>
+                <i className="fas fa-lightbulb ml-2"></i>
                 האלגוריתם יצור עיצוב קדמי שמתאים לעיצוב האחורי ולאירוע שלך
               </p>
               <button 
@@ -699,12 +1072,12 @@ const DesignFormPage = () => {
               >
                 {isGenerating ? (
                   <>
-                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                    <i className="fas fa-spinner fa-spin ml-2"></i>
                     יוצר עיצוב קדמי...
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-wand-magic-sparkles mr-2"></i>
+                    <i className="fas fa-wand-magic-sparkles ml-2"></i>
                     צור עיצוב קדמי אוטומטי
                   </>
                 )}
@@ -717,7 +1090,7 @@ const DesignFormPage = () => {
         {formData.frontDesignMethod === 'upload' && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h4 className="font-semibold text-lg mb-4 text-center text-green-800">
-              <i className="fas fa-cloud-upload-alt mr-2"></i>
+              <i className="fas fa-cloud-upload-alt ml-2"></i>
               העלאת תמונה או לוגו
             </h4>
             
@@ -744,14 +1117,14 @@ const DesignFormPage = () => {
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <i className="fas fa-check-circle text-green-600 mr-2"></i>
+                    <i className="fas fa-check-circle text-green-600 ml-2"></i>
                     <span className="font-medium text-green-800">הקובץ הועלה בהצלחה</span>
                   </div>
                   <button
                     onClick={() => setFormData(prev => ({ ...prev, uploadedImage: null }))}
                     className="text-red-600 hover:text-red-800 transition-colors"
                   >
-                    <i className="fas fa-trash mr-1"></i>
+                    <i className="fas fa-trash ml-2"></i>
                     הסר
                   </button>
                 </div>
@@ -781,7 +1154,7 @@ const DesignFormPage = () => {
         {formData.frontDesignMethod === 'symbols' && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h4 className="font-semibold text-lg mb-4 text-center text-yellow-800">
-              <i className="fas fa-archive mr-2"></i>
+              <i className="fas fa-archive ml-2"></i>
               בחירה מארכיון הסמלים
             </h4>
             
@@ -838,7 +1211,7 @@ const DesignFormPage = () => {
                 <div className="mt-4 text-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
                     נבחר: {formData.selectedSymbol}
-                    <i className="fas fa-check-circle ml-1"></i>
+                    <i className="fas fa-check-circle ml-2"></i>
                   </span>
                 </div>
               )}
@@ -849,7 +1222,7 @@ const DesignFormPage = () => {
         {/* Front Text Addition */}
         <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-xl border border-gray-200 mt-6">
           <h4 className="text-lg font-semibold mb-6 text-gray-800 text-center">
-            <i className="fas fa-font text-blue-600 mr-2"></i>
+            <i className="fas fa-font text-blue-600 ml-2"></i>
             רוצה להוסיף טקסט לעיצוב הקדמי?
           </h4>
           
@@ -941,7 +1314,7 @@ const DesignFormPage = () => {
         {/* Front Preview */}
         <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-dashed border-blue-300 mt-6">
           <h5 className="text-center text-sm font-semibold text-blue-800 mb-4 flex items-center justify-center">
-            <i className="fas fa-eye mr-2"></i>
+            <i className="fas fa-eye ml-2"></i>
             תצוגה מקדימה - חלק קדמי של החולצה
           </h5>
           <div className="bg-gradient-to-b from-gray-100 to-gray-200 p-8 rounded-lg text-center relative min-h-80 flex flex-col justify-center items-center">
@@ -1012,7 +1385,7 @@ const DesignFormPage = () => {
             <div className="mt-4 text-center">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
                 נראה מעולה! מוכן להמשיך
-                <i className="fas fa-check-circle ml-1"></i>
+                <i className="fas fa-check-circle ml-2"></i>
               </span>
             </div>
           )}
@@ -1028,7 +1401,7 @@ const DesignFormPage = () => {
       {/* Color Selection */}
       <div className="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-xl border border-red-200">
         <h3 className="text-xl font-semibold mb-6 text-gray-800 text-center">
-          <i className="fas fa-palette text-red-600 mr-2"></i>
+          <i className="fas fa-palette text-red-600 ml-2"></i>
           בחר צבע חולצה
         </h3>
         
@@ -1090,7 +1463,7 @@ const DesignFormPage = () => {
       {formData.shirtColor && (
         <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
           <h3 className="text-xl font-semibold mb-6 text-gray-800 text-center">
-            <i className="fas fa-print text-purple-600 mr-2"></i>
+            <i className="fas fa-print text-purple-600 ml-2"></i>
             בחר צבע הדפסה
           </h3>
           
@@ -1207,7 +1580,7 @@ const DesignFormPage = () => {
       {/* Size and Quantity Selection */}
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
         <h3 className="text-xl font-semibold mb-6 text-gray-800 text-center">
-          <i className="fas fa-ruler text-blue-600 mr-2"></i>
+          <i className="fas fa-ruler text-blue-600 ml-2"></i>
           מידות וכמויות
         </h3>
         
@@ -1274,7 +1647,7 @@ const DesignFormPage = () => {
       {/* Contact Information */}
       <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
         <h3 className="text-xl font-semibold mb-6 text-gray-800 text-center">
-          <i className="fas fa-user text-green-600 mr-2"></i>
+          <i className="fas fa-user text-green-600 ml-2"></i>
           פרטי יצירת קשר
         </h3>
         
@@ -1357,7 +1730,7 @@ const DesignFormPage = () => {
       {formData.shirtColor && formData.printColor && formData.sizes.length > 0 && (
         <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-xl border border-yellow-200">
           <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">
-            <i className="fas fa-calculator text-yellow-600 mr-2"></i>
+            <i className="fas fa-calculator text-yellow-600 ml-2"></i>
             הערכת מחיר
           </h3>
           
@@ -1388,7 +1761,7 @@ const DesignFormPage = () => {
       {/* Order Summary */}
       <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-dashed border-gray-300">
         <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">
-          <i className="fas fa-clipboard-list text-gray-600 mr-2"></i>
+          <i className="fas fa-clipboard-list text-gray-600 ml-2"></i>
           סיכום ההזמנה
         </h3>
         
@@ -1478,6 +1851,24 @@ const DesignFormPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
+      
+      {/* Dev Mode Indicator */}
+      {isDevMode && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <span>🚧</span>
+            <strong>מצב פיתוח פעיל</strong>
+            <span>-</span>
+            <span>תמונות גנריות (לא OpenAI אמיתי)</span>
+            {localStorage.getItem('ADMIN_DEV_MODE_OVERRIDE') !== null && (
+              <span className="bg-purple-200 text-purple-800 px-2 py-1 rounded text-xs">
+                עקיפת אדמין
+              </span>
+            )}
+            <span>🚧</span>
+          </div>
+        </div>
+      )}
       
       <div className="pt-28 pb-20">
         <div className="max-w-4xl mx-auto px-8">

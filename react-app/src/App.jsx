@@ -9,7 +9,7 @@ import Breadcrumbs from './components/Breadcrumbs'
 import LandingPage from './components/LandingPage'
 import DesignFormPage from './components/DesignFormPage'
 import CartPage from './components/CartPage'
-import OrdersPage from './components/OrdersPage'
+import MyOrders from './components/MyOrders'
 
 // App Content Component (to use AppContext inside Router)
 const AppContent = () => {
@@ -45,7 +45,7 @@ const AppContent = () => {
           <Route path="/orders" element={
             <>
               <Breadcrumbs />
-              <OrdersPage />
+              <MyOrders />
             </>
           } />
           {/* 404 Page */}

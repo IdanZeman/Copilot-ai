@@ -3,12 +3,18 @@ import { Link, useLocation } from 'react-router-dom'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { LoginButton, LogoutButton, UserProfile } from './LoginButton'
+import adminService from '../services/admin-service'
 
 const Navbar = () => {
   console.log('🧭 Navbar component rendering')
   
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [devMode, setDevMode] = useState(() => {
+    // Load dev mode state from localStorage
+    return localStorage.getItem('devMode') === 'true'
+  })
   const userMenuRef = useRef(null)
   const location = useLocation()
   const { state } = useApp()
@@ -26,6 +32,24 @@ const Navbar = () => {
     setIsUserMenuOpen(!isUserMenuOpen)
   }
 
+  const toggleDevMode = () => {
+    const newDevMode = !devMode
+    setDevMode(newDevMode)
+    localStorage.setItem('devMode', newDevMode.toString())
+    console.log('🔧 Dev mode toggled:', newDevMode)
+  }
+
+  // Check if user is admin
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      const adminStatus = adminService.isCurrentUserAdmin()
+      setIsAdmin(adminStatus)
+      console.log('👑 Admin status:', adminStatus, 'for user:', user.email)
+    } else {
+      setIsAdmin(false)
+    }
+  }, [isLoggedIn, user])
+
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -42,7 +66,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-sm shadow-lg">
-      <div className="max-w-6xl mx-auto px-8">
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="text-blue-600 font-bold text-2xl">
@@ -89,39 +113,96 @@ const Navbar = () => {
                   
                   {/* User Dropdown Menu */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 z-50">
-                      <div className="p-4 border-b border-gray-100">
-                        <UserProfile showPhoto={true} showEmail={true} />
-                      </div>
-                      <div className="p-2">
+                    <div
+                      ref={userMenuRef}
+                      className="w-72 bg-white rounded-lg shadow-2xl border border-gray-200 z-[60] overflow-hidden"
+                      style={{
+                        maxHeight: 'calc(100vh - 100px)',
+                        minWidth: '288px',
+                        position: 'fixed',
+                        top: '70px',
+                        left: '1rem'
+                      }}
+                    >
+                      {/* Menu Items */}
+                      <div className="py-2">
                         <Link
                           to="/cart"
-                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg no-underline transition-all duration-200"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 no-underline"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <i className="fas fa-shopping-cart w-5 text-center ml-3"></i>
-                          <span>עגלת קניות {state.cart.totalItems > 0 && `(${state.cart.totalItems})`}</span>
+                          <div className="w-8 h-8 flex items-center justify-center rounded bg-blue-100 text-blue-600 ml-3">
+                            <i className="fas fa-shopping-cart text-sm"></i>
+                          </div>
+                          <div className="flex-1">
+                            <span className="block">עגלת קניות</span>
+                            {state.cart.totalItems > 0 && (
+                              <span className="text-xs text-gray-500">{state.cart.totalItems} פריטים</span>
+                            )}
+                          </div>
                         </Link>
+
                         <Link
-                          to="/orders"
-                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg no-underline transition-all duration-200"
+                          to="/my-orders"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 no-underline"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <i className="fas fa-box w-5 text-center ml-3"></i>
+                          <div className="w-8 h-8 flex items-center justify-center rounded bg-green-100 text-green-600 ml-3">
+                            <i className="fas fa-box text-sm"></i>
+                          </div>
                           <span>ההזמנות שלי</span>
                         </Link>
+
                         <Link
                           to="/profile"
-                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg no-underline transition-all duration-200"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 no-underline"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <i className="fas fa-user w-5 text-center ml-3"></i>
+                          <div className="w-8 h-8 flex items-center justify-center rounded bg-purple-100 text-purple-600 ml-3">
+                            <i className="fas fa-user text-sm"></i>
+                          </div>
                           <span>פרופיל</span>
                         </Link>
-                        <hr className="my-2" />
-                        <div className="px-2 py-2">
-                          <LogoutButton size="sm" className="w-full">
-                            <i className="fas fa-sign-out-alt w-5 text-center ml-2"></i>
+
+                        {/* Dev Mode Toggle - Only for admins */}
+                        {isAdmin && (
+                          <>
+                            <div className="my-2 border-t border-gray-200"></div>
+                            <div className="px-4 py-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <div className="w-8 h-8 flex items-center justify-center rounded bg-green-100 text-green-600 ml-3">
+                                    <i className="fas fa-code text-sm"></i>
+                                  </div>
+                                  <span className="text-sm text-gray-700">מצב פיתוח</span>
+                                </div>
+                                <button
+                                  onClick={toggleDevMode}
+                                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                    devMode 
+                                      ? 'bg-green-600' 
+                                      : 'bg-gray-200'
+                                  }`}
+                                >
+                                  <span
+                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                      devMode ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Logout */}
+                        <div className="my-2 border-t border-gray-200"></div>
+                        <div className="px-4 py-2">
+                          <LogoutButton 
+                            size="sm" 
+                            className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 border-0 py-2 rounded-md transition-colors duration-150"
+                          >
+                            <i className="fas fa-sign-out-alt ml-2"></i>
                             התנתק
                           </LogoutButton>
                         </div>
@@ -180,6 +261,14 @@ const Navbar = () => {
           </div>
         )}
       </div>
+      
+      {/* Dev Mode Indicator */}
+      {devMode && (
+        <div className="fixed top-20 left-4 z-[70] bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg flex items-center gap-2 animate-pulse">
+          <i className="fas fa-code"></i>
+          <span>מצב פיתוח - ללא קריאות API</span>
+        </div>
+      )}
     </nav>
   )
 }

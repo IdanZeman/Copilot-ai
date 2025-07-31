@@ -32,7 +32,7 @@ router.post('/generate-design', async (req, res) => {
         
         // Call OpenAI API securely from server
         console.log('🤖 Calling generateDesign function...');
-        const design = await generateDesign(eventType, description, designType);
+        const design = await generateDesign(eventType, description, designType, req);
         console.log('✅ Design generated successfully:', design);
         
         res.json({ success: true, design });
@@ -76,7 +76,7 @@ router.post('/improve-design', async (req, res) => {
         console.log('🤖 Calling improveDesign function...');
         const design = await improveDesign(eventType, originalPrompt, prompt, {
             // Pass any additional options if needed
-        });
+        }, req);
         console.log('✅ Design improved successfully');
         
         res.json({ success: true, design });

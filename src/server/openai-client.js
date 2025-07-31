@@ -1,6 +1,27 @@
 import 'dotenv/config';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+// Check if in dev mode (this will be passed from frontend)
+function isDevMode(req) {
+    // Check for dev mode header sent from frontend
+    return req?.headers?.['x-dev-mode'] === 'true' || process.env.VITE_DEV_MODE === 'true';
+}
+
+// Generate default/mock design for dev mode
+function generateMockDesign(eventType, description, designType) {
+    console.log('🎭 Dev mode: Generating mock design');
+    
+    // Default base64 image - a simple placeholder
+    const defaultImageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+    
+    return {
+        imageData: defaultImageBase64,
+        prompt: `עיצוב לדוגמה עבור ${eventType}: ${description} (מצב פיתוח)`,
+        revisedPrompt: `מצב פיתוח - עיצוב לדוגמה עבור ${designType} של חולצה`,
+        isDevMode: true
+    };
+}
+
 // Helper function to generate T-shirt design prompts
 async function generateTShirtDesignPrompt(data, options = {}) {
     const { eventType, description } = data;
@@ -96,9 +117,15 @@ async function translateWithChatGPT(text) {
     return data.choices[0].message.content.trim();
 }
 
-async function generateDesign(eventType, description, designType) {
+async function generateDesign(eventType, description, designType, req = null) {
     try {
         console.log('🚀 Starting design generation:', { eventType, description, designType });
+        
+        // Check if in dev mode
+        if (isDevMode(req)) {
+            console.log('🎭 Dev mode detected - returning mock design');
+            return generateMockDesign(eventType, description, designType);
+        }
         
         // Implementation moved from ai-prompt-generator.js
         const prompt = await generateTShirtDesignPrompt({ eventType, description }, { 
@@ -133,9 +160,19 @@ async function generateDesign(eventType, description, designType) {
     }
 }
 
-async function improveDesign(eventType, originalPrompt, improvementFeedback, options = {}) {
+async function improveDesign(eventType, originalPrompt, improvementFeedback, options = {}, req = null) {
     try {
         console.log('🚀 Starting design improvement:', { eventType, improvementFeedback });
+        
+        // Check if in dev mode
+        if (isDevMode(req)) {
+            console.log('🎭 Dev mode detected - returning mock improved design');
+            return {
+                ...generateMockDesign(eventType, `שיפור: ${improvementFeedback}`, 'front'),
+                prompt: `עיצוב משופר: ${originalPrompt} + ${improvementFeedback}`,
+                revisedPrompt: `מצב פיתוח - עיצוב משופר`
+            };
+        }
         
         // Translate feedback if needed
         const translatedFeedback = await translateWithChatGPT(improvementFeedback);
